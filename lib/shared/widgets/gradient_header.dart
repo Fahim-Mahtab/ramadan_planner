@@ -2,19 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 
-/// Gradient header widget with Ramadan day info and countdown
+/// Gradient header widget with Ramadan day info and countdown.
 class GradientHeader extends StatelessWidget {
   final int ramadanDay;
   final String profileImageUrl;
-
-  /// Called when the user taps the logout button.
-  final VoidCallback? onLogout;
 
   const GradientHeader({
     super.key,
     required this.ramadanDay,
     this.profileImageUrl = '',
-    this.onLogout,
   });
 
   @override
@@ -27,11 +23,7 @@ class GradientHeader extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            Color(0xFF10D460), // primary/90
-            AppColors.emerald600,
-          ],
+          colors: [AppColors.primary, Color(0xFF10D460), AppColors.emerald600],
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
@@ -75,7 +67,7 @@ class GradientHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top row with title and profile
+                // Top row: title
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -102,8 +94,6 @@ class GradientHeader extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Logout button in top-right part of header
-                    if (onLogout != null) _LogoutIconButton(onTap: onLogout!),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -170,43 +160,6 @@ class _CountdownCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Logout button shown in the gradient header's top-right corner.
-class _LogoutIconButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _LogoutIconButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.logout_rounded, color: Colors.white, size: 16),
-            SizedBox(width: 6),
-            Text(
-              'Log out',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
