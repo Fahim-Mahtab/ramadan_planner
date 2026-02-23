@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Daily Ramadan Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Amiri:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec6d",
+                        "gold": "#D4AF37",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#102218",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "arabic": ["Amiri", "serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1.25rem", // Close to 20px
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .islamic-pattern {
+            background-image: radial-gradient(circle at 2px 2px, rgba(19, 236, 109, 0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 islamic-pattern min-h-screen">
+<!-- Top Navigation / Header -->
+<header class="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-emerald-600 pt-12 pb-8 px-6 rounded-b-xl shadow-lg">
+<!-- Decorative Iconography -->
+<div class="absolute top-0 right-0 opacity-10 pointer-events-none">
+<span class="material-icons-round text-[120px]">mosque</span>
+</div>
+<div class="absolute -bottom-6 -left-6 opacity-10 pointer-events-none transform -rotate-12">
+<span class="material-icons-round text-[100px]">bedtime</span>
+</div>
+<div class="flex justify-between items-start relative z-10">
+<div>
+<h1 class="text-white text-3xl font-bold">Ramadan Day 1</h1>
+<p class="text-white/80 text-sm mt-1">Thursday, 14 March 2024</p>
+</div>
+<div class="bg-white/20 p-2 rounded-full backdrop-blur-md">
+<img alt="Profile" class="w-10 h-10 rounded-full border-2 border-white/50" data-alt="Portrait of a smiling user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZ0oBlrBLthfKlniZ94ftEe-8fkORN9ym24QbSzLOWqDMrHB51gTlbPAuHSIKRk3_l3zGcY-Y7wPYAIXP2XLDR8jIUjf3NZthvGPIt9TjnXYsGzumERvA-c8B5ACxpnzGPbrzmprFF0YOj8sIXeaCkTmdH5WnaHodos4Fk_yoKsPbdpZTfb5APss75WceHQOHDJR3Jm-5Go9kBVjFtdWYkBaARtaLCtmATWOyAPyNE7n5pTzbu10Im4vPzIq1Jlq343fGHm35b19s"/>
+</div>
+</div>
+<!-- Progress Mini Stats -->
+<div class="mt-6 grid grid-cols-2 gap-4">
+<div class="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
+<span class="text-white/70 text-xs block">Iftar In</span>
+<span class="text-white font-bold text-lg leading-tight">04h 22m</span>
+</div>
+<div class="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/10">
+<span class="text-white/70 text-xs block">Suhoor Ends</span>
+<span class="text-white font-bold text-lg leading-tight">04:45 AM</span>
+</div>
+</div>
+</header>
+<main class="px-5 -mt-4 pb-24 space-y-6 relative z-20">
+<!-- Salah Tracker -->
+<div class="bg-white dark:bg-slate-900/50 rounded-lg p-5 shadow-sm border border-emerald-50 dark:border-emerald-900/20">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-bold text-slate-700 dark:text-emerald-100">Daily Salah</h3>
+<span class="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-full">4/6 Done</span>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<!-- Fajr -->
+<button class="flex flex-col items-center p-3 rounded-lg bg-primary text-white shadow-md">
+<span class="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-80">Fajr</span>
+<span class="material-icons-round text-2xl">check_circle</span>
+</button>
+<!-- Dhuhr -->
+<button class="flex flex-col items-center p-3 rounded-lg bg-primary text-white shadow-md">
+<span class="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-80">Dhuhr</span>
+<span class="material-icons-round text-2xl">check_circle</span>
+</button>
+<!-- Asr -->
+<button class="flex flex-col items-center p-3 rounded-lg bg-primary text-white shadow-md">
+<span class="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-80">Asr</span>
+<span class="material-icons-round text-2xl">check_circle</span>
+</button>
+<!-- Maghrib -->
+<button class="flex flex-col items-center p-3 rounded-lg bg-primary text-white shadow-md">
+<span class="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-80">Maghrib</span>
+<span class="material-icons-round text-2xl">check_circle</span>
+</button>
+<!-- Isha -->
+<button class="flex flex-col items-center p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-emerald-200 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400">
+<span class="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-60">Isha</span>
+<span class="material-icons-round text-2xl">radio_button_unchecked</span>
+</button>
+<!-- Taraweeh -->
+<button class="flex flex-col items-center p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-emerald-200 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400">
+<span class="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-60">Taraweeh</span>
+<span class="material-icons-round text-2xl">radio_button_unchecked</span>
+</button>
+</div>
+</div>
+<!-- Ayah of the Day -->
+<div class="bg-white dark:bg-slate-900 rounded-lg p-6 shadow-sm border border-emerald-50 dark:border-emerald-900/20 relative">
+<div class="flex justify-between items-center mb-4">
+<span class="text-xs uppercase font-bold tracking-widest text-primary">Ayah of the Day</span>
+<span class="material-icons-round text-gold cursor-pointer">share</span>
+</div>
+<p class="font-arabic text-2xl text-right leading-loose text-slate-800 dark:text-white mb-4" dir="rtl">
+                شَهْرُ رَمَضَانَ الَّذِي أُنزِلَ فِيهِ الْقُرْآنُ هُدًى لِّلنَّاسِ
+            </p>
+<p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-medium italic mb-2">
+                "রমজান মাসই হলো সেই মাস, যাতে নাযিল করা হয়েছে কুরআন, যা মানুষের জন্য হেদায়েত।"
+            </p>
+<p class="text-xs text-slate-400 dark:text-slate-500">— Surah Al-Baqarah 2:185</p>
+</div>
+<!-- Progress Tracker -->
+<div class="bg-white dark:bg-slate-900 rounded-lg p-5 shadow-sm border border-emerald-50 dark:border-emerald-900/20">
+<h3 class="font-bold text-slate-700 dark:text-emerald-100 mb-4">Quran Progress</h3>
+<div class="flex items-center gap-4 mb-3">
+<div class="flex-1 bg-emerald-50 dark:bg-emerald-950/30 h-3 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full w-[35%]"></div>
+</div>
+<span class="text-sm font-bold text-primary">35%</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="space-y-1">
+<p class="text-xs text-slate-500">Target: 30 Juz</p>
+<p class="text-xs text-slate-500">Current: Juz 10, Page 194</p>
+</div>
+<button class="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                    Update Log
+                </button>
+</div>
+</div>
+<!-- Tasks Checklist -->
+<div class="bg-white dark:bg-slate-900 rounded-lg p-5 shadow-sm border border-emerald-50 dark:border-emerald-900/20">
+<h3 class="font-bold text-slate-700 dark:text-emerald-100 mb-4">Sunnah Checklist</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded border-2 border-primary bg-primary flex items-center justify-center">
+<span class="material-icons-round text-white text-sm">done</span>
+</div>
+<span class="text-sm text-slate-500 line-through">Give Sadaqah (Charity) today</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded border-2 border-emerald-200 dark:border-emerald-800"></div>
+<span class="text-sm text-slate-700 dark:text-slate-300">Recite Surah Al-Mulk before bed</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded border-2 border-emerald-200 dark:border-emerald-800"></div>
+<span class="text-sm text-slate-700 dark:text-slate-300">Make Dua for the Ummah</span>
+</div>
+</div>
+</div>
+<!-- Dua of the Day -->
+<div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-6 border-l-4 border-gold shadow-sm">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-icons-round text-gold text-lg">auto_awesome</span>
+<span class="text-xs uppercase font-bold tracking-widest text-emerald-800 dark:text-emerald-200">Dua of the Day</span>
+</div>
+<p class="font-arabic text-xl leading-relaxed text-right text-emerald-900 dark:text-emerald-100 mb-3" dir="rtl">
+                اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي
+            </p>
+<p class="text-sm text-emerald-700 dark:text-emerald-300">
+                "হে আল্লাহ! আপনি পরম ক্ষমাশীল, আপনি ক্ষমা করতে ভালোবাসেন, তাই আমাকে ক্ষমা করুন।"
+            </p>
+</div>
+<!-- Names of Allah Section -->
+<div class="bg-white dark:bg-slate-900 rounded-lg p-5 shadow-sm border border-emerald-50 dark:border-emerald-900/20 overflow-hidden relative">
+<div class="flex justify-between items-center mb-3">
+<h3 class="font-bold text-slate-700 dark:text-emerald-100">Asmaul Husna</h3>
+<span class="text-[10px] text-slate-400">1 of 99</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
+<span class="font-arabic text-2xl text-gold">الرَّحْمَنُ</span>
+</div>
+<div>
+<h4 class="font-bold text-slate-800 dark:text-white">Ar-Rahman</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400">The Most Gracious / পরম দয়ালু</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (iOS Style) -->
+<nav class="fixed bottom-0 left-0 right-0 ios-blur bg-white/80 dark:bg-slate-900/80 border-t border-emerald-100 dark:border-emerald-900/30 px-6 py-3 pb-8 flex justify-between items-center z-50">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons-round">home</span>
+<span class="text-[10px] font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+<span class="material-icons-round">menu_book</span>
+<span class="text-[10px] font-medium">Quran</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+<span class="material-icons-round">schedule</span>
+<span class="text-[10px] font-medium">Times</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+<span class="material-icons-round">volunteer_activism</span>
+<span class="text-[10px] font-medium">Dua</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+<span class="material-icons-round">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</button>
+</nav>
+</body></html>
