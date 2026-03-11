@@ -85,6 +85,44 @@
             margin-bottom: 20px;
         }
 
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--muted);
+            border: none;
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: .2s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            background: rgba(19, 236, 109, .15);
+            color: var(--green);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         /* ── Form ── */
         .form-grid {
             display: grid;
@@ -445,67 +483,178 @@
             </div>
         </header>
 
-        <!-- Create Ad Form -->
-        <div class="card">
-            <h2>➕ Create New Ad</h2>
-            <form class="form-grid" id="adForm">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('ads', event)">Ads Admin</button>
+            <button class="tab-btn" onclick="switchTab('notices', event)">Notice Board</button>
+            <button class="tab-btn" onclick="switchTab('hadiths', event)">Last 10 Days Hadith</button>
+        </div>
 
-                <div>
-                    <label>Ad Title</label>
-                    <input type="text" id="title" placeholder="e.g. Ramadan Special Offer" required />
-                </div>
+        <div id="adsTab" class="tab-content active">
 
-                <div class="row">
+            <!-- Create Ad Form -->
+            <div class="card">
+                <h2>➕ Create New Ad</h2>
+                <form class="form-grid" id="adForm">
+
                     <div>
-                        <label>Redirect URL (where user goes on tap)</label>
-                        <input type="url" id="redirectUrl" placeholder="https://example.com/offer" required />
+                        <label>Ad Title</label>
+                        <input type="text" id="title" placeholder="e.g. Ramadan Special Offer" required />
                     </div>
-                </div>
 
-                <div>
-                    <label>Ad Image</label>
-                    <div class="upload-area" id="uploadArea">
-                        <input type="file" id="imageFile" accept="image/*" />
-                        <div id="uploadPrompt">
-                            <div style="font-size:28px;">🖼</div>
-                            <p>Click to upload image (JPG, PNG, WebP)</p>
+                    <div class="row">
+                        <div>
+                            <label>Placement</label>
+                            <select id="placement"
+                                style="width: 100%; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; outline: none;">
+                                <option value="splash">Splash Screen</option>
+                                <option value="home">Home Banner</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Redirect URL (where user goes on tap)</label>
+                            <input type="url" id="redirectUrl" placeholder="https://example.com/offer" required />
                         </div>
                     </div>
-                    <!-- Live app-like preview -->
-                    <div id="appPreview">
-                        <img id="previewImg" alt="ad preview" />
-                        <div class="preview-bar">
-                            <span class="ad-badge">AD</span>
-                            <span class="preview-title" id="previewTitle">Ad title will appear here</span>
-                            <span class="preview-arrow">→</span>
+
+                    <div>
+                        <label>Ad Image</label>
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" id="imageFile" accept="image/*" />
+                            <div id="uploadPrompt">
+                                <div style="font-size:28px;">🖼</div>
+                                <p>Click to upload image (JPG, PNG, WebP)</p>
+                            </div>
                         </div>
+                        <!-- Live app-like preview -->
+                        <div id="appPreview">
+                            <img id="previewImg" alt="ad preview" />
+                            <div class="preview-bar">
+                                <span class="ad-badge">AD</span>
+                                <span class="preview-title" id="previewTitle">Ad title will appear here</span>
+                                <span class="preview-arrow">→</span>
+                            </div>
+                        </div>
+                        <div id="previewDimensions"></div>
                     </div>
-                    <div id="previewDimensions"></div>
-                </div>
 
-                <div class="toggle-row">
-                    <label class="switch">
-                        <input type="checkbox" id="isActive" checked />
-                        <span class="slider"></span>
-                    </label>
-                    <span style="font-size:14px;">Active (visible in app)</span>
-                </div>
+                    <div class="toggle-row">
+                        <label class="switch">
+                            <input type="checkbox" id="isActive" checked />
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:14px;">Active (visible in app)</span>
+                    </div>
 
-                <div style="display:flex;gap:12px;align-items:center;">
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Publish Ad</button>
-                    <span id="status"></span>
-                </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Publish Ad</button>
+                        <span id="status"></span>
+                    </div>
 
-            </form>
-        </div>
-
-        <!-- Existing Ads -->
-        <div class="card">
-            <h2>📋 Existing Ads</h2>
-            <div class="ads-list" id="adsList">
-                <div class="empty"><span class="spinner"></span> Loading...</div>
+                </form>
             </div>
-        </div>
+
+            <!-- Existing Ads -->
+            <div class="card">
+                <h2>📋 Existing Ads</h2>
+                <div class="ads-list" id="adsList">
+                    <div class="empty"><span class="spinner"></span> Loading...</div>
+                </div>
+            </div>
+        </div> <!-- End adsTab -->
+
+        <!-- NOTICES SECTION -->
+        <div id="noticesTab" class="tab-content">
+            <div class="card">
+                <h2>📢 Create New Notice</h2>
+                <form class="form-grid" id="noticeForm">
+                    <div>
+                        <label>Notice Title</label>
+                        <input type="text" id="nTitle" placeholder="e.g. Ramadan Mubarak!" required />
+                    </div>
+                    <div>
+                        <label>Message (Optional)</label>
+                        <textarea id="nMessage" placeholder="Type your announcement here..."
+                            style="width: 100%; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; outline: none; min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label>Header Image URL (Optional)</label>
+                        <input type="url" id="nImageUrl" placeholder="https://example.com/image.jpg" />
+                    </div>
+                    <div class="toggle-row">
+                        <label class="switch">
+                            <input type="checkbox" id="nIsActive" checked />
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:14px;">Active (visible in app)</span>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <button type="submit" class="btn btn-primary" id="nSubmitBtn">Publish Notice</button>
+                        <span id="nStatus"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📋 Existing Notices</h2>
+                <div class="ads-list" id="noticesList">
+                    <div class="empty"><span class="spinner"></span> Loading...</div>
+                </div>
+            </div>
+        </div> <!-- End noticesTab -->
+
+        <!-- HADITHS SECTION -->
+        <div id="hadithsTab" class="tab-content">
+            <div class="card">
+                <h2>📖 Add Hadith for Last 10 Days</h2>
+                <form class="form-grid" id="hadithForm">
+                    <div class="row">
+                        <div style="flex: 0 0 120px;">
+                            <label>Ramadan Day</label>
+                            <input type="number" id="hDay" min="21" max="30" value="21" required
+                                style="width: 100%; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; outline: none;" />
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Source (e.g. Bukhari 2024)</label>
+                            <input type="text" id="hSource" placeholder="Sahih Bukhari" required />
+                        </div>
+                    </div>
+                    <div>
+                        <label>Arabic Text</label>
+                        <textarea id="hArabic" placeholder="Arabic text here..." required dir="rtl"
+                            style="width: 100%; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 18px; outline: none; min-height: 80px; resize: vertical; text-align: right;"></textarea>
+                    </div>
+                    <div>
+                        <label>Bangla Translation</label>
+                        <textarea id="hBangla" placeholder="Bangla translation here..." required
+                            style="width: 100%; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; outline: none; min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label>English Translation (Optional)</label>
+                        <textarea id="hEnglish" placeholder="English translation here..."
+                            style="width: 100%; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; outline: none; min-height: 80px; resize: vertical;"></textarea>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="switch">
+                            <input type="checkbox" id="hIsActive" checked />
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:14px;">Active (visible in app)</span>
+                    </div>
+                    <div style="display:flex;gap:12px;align-items:center;">
+                        <button type="submit" class="btn btn-primary" id="hSubmitBtn">Publish Hadith</button>
+                        <span id="hStatus"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📋 Existing Hadiths</h2>
+                <div class="ads-list" id="hadithList">
+                    <div class="empty"><span class="spinner"></span> Loading...</div>
+                </div>
+            </div>
+        </div> <!-- End hadithsTab -->
 
     </div>
 
@@ -558,6 +707,7 @@
 
             const title = document.getElementById('title').value.trim();
             const redirectUrl = document.getElementById('redirectUrl').value.trim();
+            const placement = document.getElementById('placement').value;
             const isActive = document.getElementById('isActive').checked;
             const imageFile = imageFileInput.files[0];
             const submitBtn = document.getElementById('submitBtn');
@@ -586,11 +736,11 @@
 
                 status.innerHTML = '<span class="spinner"></span> Saving ad...';
 
-                // 3. Insert the Ad row
                 const { error: insertError } = await db.from('ads').insert({
                     title,
                     image_url: publicUrl,
                     redirect_url: redirectUrl,
+                    placement,
                     is_active: isActive,
                 });
 
@@ -634,7 +784,7 @@
       <div class="ad-item" id="ad-${ad.id}">
         <img class="ad-thumb" src="${ad.image_url}" alt="${ad.title}" onerror="this.src=''" />
         <div class="ad-info">
-          <div class="ad-title">${escHtml(ad.title)}</div>
+          <div class="ad-title">${escHtml(ad.title)} <span style="font-size:10px; color:#94a3b8; margin-left:8px; border:1px solid #334155; padding:2px 4px; border-radius:4px;">${ad.placement === 'home' ? 'Home' : 'Splash'}</span></div>
           <div class="ad-url">${escHtml(ad.redirect_url)}</div>
         </div>
         <span class="badge ${ad.is_active ? 'badge-active' : 'badge-inactive'}">
@@ -715,8 +865,208 @@
             toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
         }
 
+        // ── Tabs ──
+        function switchTab(tabId, event) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId + 'Tab').classList.add('active');
+        }
+
+        // ── Notices Form submit ──
+        document.getElementById('noticeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('nTitle').value.trim();
+            const message = document.getElementById('nMessage').value.trim();
+            const imageUrl = document.getElementById('nImageUrl').value.trim();
+            const isActive = document.getElementById('nIsActive').checked;
+            const submitBtn = document.getElementById('nSubmitBtn');
+            const status = document.getElementById('nStatus');
+
+            submitBtn.disabled = true;
+            status.innerHTML = '<span class="spinner"></span> Saving notice...';
+
+            try {
+                const { error: insertError } = await db.from('notices').insert({
+                    title,
+                    message: message || null,
+                    image_url: imageUrl || null,
+                    is_active: isActive,
+                });
+
+                if (insertError) throw insertError;
+                toast('✅ Notice published successfully!');
+                e.target.reset();
+                loadNotices();
+            } catch (err) {
+                console.error(err);
+                toast('❌ Error: ' + err.message, true);
+            } finally {
+                submitBtn.disabled = false;
+                status.innerHTML = '';
+            }
+        });
+
+        // ── Load notices ──
+        async function loadNotices() {
+            const list = document.getElementById('noticesList');
+            const { data, error } = await db
+                .from('notices')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                list.innerHTML = `<div class="empty">Error loading notices: ${error.message}</div>`;
+                return;
+            }
+            if (!data.length) {
+                list.innerHTML = '<div class="empty">No notices yet. Create your first one above!</div>';
+                return;
+            }
+
+            list.innerHTML = data.map(n => `
+      <div class="ad-item" id="notice-${n.id}">
+        <div class="ad-thumb" style="display:grid;place-items:center;font-size:24px;overflow:hidden;">
+            ${n.image_url ? `<img src="${n.image_url}" alt="${n.title}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;" />` : '📢'}
+        </div>
+        <div class="ad-info">
+          <div class="ad-title">${escHtml(n.title)}</div>
+          <div class="ad-url" style="white-space:normal;">${escHtml(n.message || 'No message')}</div>
+        </div>
+        <span class="badge ${n.is_active ? 'badge-active' : 'badge-inactive'}">
+          ${n.is_active ? 'Active' : 'Inactive'}
+        </span>
+        <div class="ad-actions">
+          <button class="btn btn-toggle" onclick="toggleNotice('${n.id}', ${n.is_active})">
+            ${n.is_active ? 'Deactivate' : 'Activate'}
+          </button>
+          <button class="btn btn-danger" onclick="deleteNotice('${n.id}')">
+            Delete
+          </button>
+        </div>
+      </div>
+    `).join('');
+        }
+
+        async function toggleNotice(id, currentActive) {
+            const { error } = await db.from('notices').update({ is_active: !currentActive }).eq('id', id);
+            if (error) { toast('❌ ' + error.message, true); return; }
+            toast(currentActive ? 'Notice deactivated.' : 'Notice activated!');
+            loadNotices();
+        }
+
+        async function deleteNotice(id) {
+            if (!confirm('Delete this notice? This cannot be undone.')) return;
+            const { error } = await db.from('notices').delete().eq('id', id);
+            if (error) { toast('❌ ' + error.message, true); return; }
+            toast('Notice deleted.');
+            loadNotices();
+        }
+
+        db.channel('admin:notices')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, loadNotices)
+            .subscribe();
+
+        // ── Hadiths Admin ──
+        document.getElementById('hadithForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const ramadan_day = parseInt(document.getElementById('hDay').value, 10);
+            const arabic_text = document.getElementById('hArabic').value.trim();
+            const bangla_translation = document.getElementById('hBangla').value.trim();
+            const english_translation = document.getElementById('hEnglish').value.trim();
+            const source = document.getElementById('hSource').value.trim();
+            const is_active = document.getElementById('hIsActive').checked;
+            const submitBtn = document.getElementById('hSubmitBtn');
+            const status = document.getElementById('hStatus');
+
+            submitBtn.disabled = true;
+            status.innerHTML = '<span class="spinner"></span> Saving hadith...';
+
+            try {
+                const { error: insertError } = await db.from('last_ten_days_hadith').insert({
+                    ramadan_day, arabic_text, bangla_translation, 
+                    english_translation: english_translation || null, 
+                    source, is_active
+                });
+
+                if (insertError) throw insertError;
+                toast('✅ Hadith published successfully!');
+                e.target.reset();
+                document.getElementById('hDay').value = ramadan_day; // keep the day
+                loadHadiths();
+            } catch (err) {
+                console.error(err);
+                toast('❌ Error: ' + err.message, true);
+            } finally {
+                submitBtn.disabled = false;
+                status.innerHTML = '';
+            }
+        });
+
+        async function loadHadiths() {
+            const list = document.getElementById('hadithList');
+            const { data, error } = await db
+                .from('last_ten_days_hadith')
+                .select('*')
+                .order('ramadan_day', { ascending: true });
+
+            if (error) {
+                list.innerHTML = `<div class="empty">Error loading hadiths: ${error.message}</div>`;
+                return;
+            }
+            if (!data.length) {
+                list.innerHTML = '<div class="empty">No hadiths yet. Add one above!</div>';
+                return;
+            }
+
+            list.innerHTML = data.map(h => `
+      <div class="ad-item" id="hadith-${h.id}">
+        <div class="ad-thumb" style="display:grid;place-items:center;font-size:24px;overflow:hidden;background:rgba(19,236,109,0.1);color:var(--green);font-weight:bold;">
+            ${h.ramadan_day}
+        </div>
+        <div class="ad-info">
+          <div class="ad-title">${escHtml(h.source)}</div>
+          <div class="ad-url" style="white-space:normal;font-size:16px;margin:6px 0;" dir="rtl">${escHtml(h.arabic_text)}</div>
+          <div class="ad-url" style="white-space:normal;">${escHtml(h.bangla_translation)}</div>
+        </div>
+        <span class="badge ${h.is_active ? 'badge-active' : 'badge-inactive'}">
+          ${h.is_active ? 'Active' : 'Inactive'}
+        </span>
+        <div class="ad-actions">
+          <button class="btn btn-toggle" onclick="toggleHadith('${h.id}', ${h.is_active})">
+            ${h.is_active ? 'Deactivate' : 'Activate'}
+          </button>
+          <button class="btn btn-danger" onclick="deleteHadith('${h.id}')">
+            Delete
+          </button>
+        </div>
+      </div>
+    `).join('');
+        }
+
+        async function toggleHadith(id, currentActive) {
+            const { error } = await db.from('last_ten_days_hadith').update({ is_active: !currentActive }).eq('id', id);
+            if (error) { toast('❌ ' + error.message, true); return; }
+            toast(currentActive ? 'Hadith deactivated.' : 'Hadith activated!');
+            loadHadiths();
+        }
+
+        async function deleteHadith(id) {
+            if (!confirm('Delete this hadith? This cannot be undone.')) return;
+            const { error } = await db.from('last_ten_days_hadith').delete().eq('id', id);
+            if (error) { toast('❌ ' + error.message, true); return; }
+            toast('Hadith deleted.');
+            loadHadiths();
+        }
+
+        db.channel('admin:hadiths')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'last_ten_days_hadith' }, loadHadiths)
+            .subscribe();
+
         // Initial load
         loadAds();
+        loadNotices();
+        loadHadiths();
     </script>
 </body>
 

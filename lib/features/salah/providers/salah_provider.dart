@@ -1,16 +1,20 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import '../models/salah_model.dart';
 import '../../../core/constants/app_constants.dart';
 
 /// Provider for managing Salah (prayer) state
 class SalahProvider with ChangeNotifier {
   List<SalahModel> _prayers = [];
+  bool _isLoading = true;
 
   SalahProvider() {
     _initializePrayers();
   }
 
   List<SalahModel> get prayers => _prayers;
+  bool get isLoading => _isLoading;
 
   int get completedCount => _prayers.where((p) => p.isCompleted).length;
 
@@ -18,28 +22,46 @@ class SalahProvider with ChangeNotifier {
 
   String get completionStatus => '$completedCount/$totalCount Done';
 
-  void _initializePrayers() {
+  String get _currentDateKey => DateFormat('yyyy_MM_dd').format(DateTime.now());
+
+  Future<void> _initializePrayers() async {
     _prayers = AppConstants.prayerNames
         .map((name) => SalahModel(name: name))
         .toList();
 
-    // Mock data: Mark first 4 prayers as completed
-    _prayers[0].isCompleted = true; // Fajr
-    _prayers[1].isCompleted = true; // Dhuhr
-    _prayers[2].isCompleted = true; // Asr
-    _prayers[3].isCompleted = true; // Maghrib
+    final prefs = await SharedPreferences.getInstance();
+    final dateKey = _currentDateKey;
+
+    for (int i = 0; i < _prayers.length; i++) {
+      bool? isCompleted = prefs.getBool('salah_${dateKey}_$i');
+      if (isCompleted != null) {
+        _prayers[i].isCompleted = isCompleted;
+      }
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
-  void togglePrayer(int index) {
+  Future<void> togglePrayer(int index) async {
     if (index >= 0 && index < _prayers.length) {
       _prayers[index].toggle();
       notifyListeners();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(
+        'salah_${_currentDateKey}_$index',
+        _prayers[index].isCompleted,
+      );
     }
   }
 
-  void resetAll() {
-    for (var prayer in _prayers) {
-      prayer.isCompleted = false;
+  Future<void> resetAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateKey = _currentDateKey;
+    for (int i = 0; i < _prayers.length; i++) {
+      _prayers[i].isCompleted = false;
+      await prefs.setBool('salah_${dateKey}_$i', false);
     }
     notifyListeners();
   }

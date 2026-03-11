@@ -35,8 +35,7 @@ class AyahCard extends StatelessWidget {
                   color: AppColors.gold,
                   size: 20,
                 ),
-                onPressed: () {
-                  // TODO: Implement share functionality
+                onPressed: () {                  
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Share functionality coming soon!'),

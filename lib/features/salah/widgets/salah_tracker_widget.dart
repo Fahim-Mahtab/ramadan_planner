@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/custom_card.dart';
 import '../providers/salah_provider.dart';
+import '../providers/prayer_times_provider.dart';
+import '../models/salah_model.dart';
 
 /// Salah tracker widget displaying prayer grid
 class SalahTrackerWidget extends StatelessWidget {
@@ -11,8 +14,68 @@ class SalahTrackerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SalahProvider>(
-      builder: (context, salahProvider, child) {
+    return Consumer2<SalahProvider, PrayerTimesProvider>(
+      builder: (context, salahProvider, prayerTimesProvider, child) {
+        if (salahProvider.isLoading) {
+          return const CustomCard(
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        final prayerTimes = prayerTimesProvider.prayerTimes;
+        List<Map<String, dynamic>> visiblePrayers = [];
+
+        if (prayerTimes != null) {
+          final now = DateTime.now();
+          final format = DateFormat("HH:mm");
+
+          DateTime parseTime(String time) {
+            try {
+              final rawTime = time.split(' ').first;
+              final parsed = format.parse(rawTime);
+              return DateTime(
+                now.year,
+                now.month,
+                now.day,
+                parsed.hour,
+                parsed.minute,
+              );
+            } catch (e) {
+              return DateTime(now.year, now.month, now.day, 0, 0);
+            }
+          }
+
+          final prayerTimeMap = {
+            'Fajr': parseTime(prayerTimes.fajr),
+            'Dhuhr': parseTime(prayerTimes.dhuhr),
+            'Asr': parseTime(prayerTimes.asr),
+            'Maghrib': parseTime(prayerTimes.maghrib),
+            'Isha': parseTime(prayerTimes.isha),
+          };
+
+          for (int i = 0; i < salahProvider.prayers.length; i++) {
+            final prayer = salahProvider.prayers[i];
+            final time = prayerTimeMap[prayer.name];
+            bool hasStarted = true;
+            if (time != null) {
+              hasStarted = now.isAfter(time);
+            }
+            if (hasStarted) {
+              visiblePrayers.add({'index': i, 'prayer': prayer});
+            }
+          }
+        } else {
+          for (int i = 0; i < salahProvider.prayers.length; i++) {
+            visiblePrayers.add({
+              'index': i,
+              'prayer': salahProvider.prayers[i],
+            });
+          }
+        }
+
         return CustomCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,26 +111,43 @@ class SalahTrackerWidget extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              // Prayer grid
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1,
+              if (visiblePrayers.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                  child: Center(
+                    child: Text(
+                      "Waiting for Fajr time to begin...",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                // Prayer grid
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: visiblePrayers.length,
+                  itemBuilder: (context, index) {
+                    final item = visiblePrayers[index];
+                    final originalIndex = item['index'] as int;
+                    final prayer = item['prayer'] as SalahModel;
+
+                    return _PrayerButton(
+                      name: prayer.name,
+                      isCompleted: prayer.isCompleted,
+                      onTap: () => salahProvider.togglePrayer(originalIndex),
+                    );
+                  },
                 ),
-                itemCount: salahProvider.prayers.length,
-                itemBuilder: (context, index) {
-                  final prayer = salahProvider.prayers[index];
-                  return _PrayerButton(
-                    name: prayer.name,
-                    isCompleted: prayer.isCompleted,
-                    onTap: () => salahProvider.togglePrayer(index),
-                  );
-                },
-              ),
             ],
           ),
         );

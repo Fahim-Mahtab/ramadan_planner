@@ -10,6 +10,11 @@ import 'features/auth/screens/auth_gate.dart';
 import 'features/salah/providers/salah_provider.dart';
 import 'features/quran/providers/quran_provider.dart';
 import 'features/sunnah_checklist/providers/checklist_provider.dart';
+import 'features/dua/providers/hadith_provider.dart';
+import 'features/salah/providers/prayer_times_provider.dart';
+import 'features/notes/providers/notes_provider.dart';
+import 'features/notices/providers/notices_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   // Required before any async work before runApp.
@@ -21,11 +26,15 @@ Future<void> main() async {
     anonKey: AppConfig.supabaseAnonKey,
   );
 
-  runApp(const MyApp());
+  // Initialize SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+
+  runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences prefs;
+  const MyApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +48,12 @@ class MyApp extends StatelessWidget {
 
         // Feature-specific providers.
         ChangeNotifierProvider(create: (_) => SalahProvider()),
+        ChangeNotifierProvider(create: (_) => PrayerTimesProvider()),
         ChangeNotifierProvider(create: (_) => QuranProvider()),
         ChangeNotifierProvider(create: (_) => ChecklistProvider()),
+        ChangeNotifierProvider(create: (_) => NotesProvider(prefs)),
+        ChangeNotifierProvider(create: (_) => NoticesProvider()),
+        ChangeNotifierProvider(create: (_) => HadithProvider()),
       ],
       child: MaterialApp(
         title: 'Ramadan Planner',

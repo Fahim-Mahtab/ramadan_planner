@@ -4,6 +4,7 @@ class AdModel {
   final String title;
   final String imageUrl;
   final String redirectUrl;
+  final String placement;
   final bool isActive;
   final DateTime createdAt;
 
@@ -12,6 +13,7 @@ class AdModel {
     required this.title,
     required this.imageUrl,
     required this.redirectUrl,
+    required this.placement,
     required this.isActive,
     required this.createdAt,
   });
@@ -23,6 +25,7 @@ class AdModel {
       title: map['title'] as String? ?? '',
       imageUrl: map['image_url'] as String? ?? '',
       redirectUrl: map['redirect_url'] as String? ?? '',
+      placement: map['placement'] as String? ?? 'splash',
       isActive: map['is_active'] as bool? ?? false,
       createdAt: DateTime.parse(map['created_at'] as String),
     );

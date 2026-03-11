@@ -13,6 +13,15 @@ class ChecklistWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ChecklistProvider>(
       builder: (context, checklistProvider, child) {
+        if (checklistProvider.isLoading) {
+          return const CustomCard(
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
         return CustomCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

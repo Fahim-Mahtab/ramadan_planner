@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/time_formatter.dart';
+import '../../features/salah/providers/prayer_times_provider.dart';
 
 /// Gradient header widget with Ramadan day info and countdown.
 class GradientHeader extends StatelessWidget {
@@ -62,61 +65,79 @@ class GradientHeader extends StatelessWidget {
             ),
           ),
           // Content
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top row: title
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Consumer<PrayerTimesProvider>(
+            builder: (context, provider, child) {
+              final data = provider.prayerTimes;
+
+              String topTitle = data?.hijriDate ?? 'Fetching Date...';
+              String iftarTime = "-- : --";
+              String suhoorTime = "-- : --";
+
+              if (data != null) {
+                iftarTime = TimeFormatter.to12Hour(data.maghrib);
+                suhoorTime = TimeFormatter.to12Hour(data.fajr);
+              } else if (provider.isLoading) {
+                iftarTime = "Loading";
+                suhoorTime = "Loading";
+              }
+
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Ramadan Day $ramadanDay',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    // Top row: title
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                topTitle,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                formattedDate,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            formattedDate,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 14,
-                            ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // Countdown stats
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _CountdownCard(
+                            label: 'Iftar At',
+                            value: iftarTime,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _CountdownCard(
+                            label: 'Suhoor Ends',
+                            value: suhoorTime,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                // Countdown stats
-                Row(
-                  children: [
-                    Expanded(
-                      child: _CountdownCard(
-                        label: 'Iftar In',
-                        value: '04h 22m',
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _CountdownCard(
-                        label: 'Suhoor Ends',
-                        value: '04:45 AM',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -144,9 +165,10 @@ class _CountdownCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+            style: const TextStyle(
+              color: Colors.white,
               fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),
