@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../notices/screens/admin_notices_screen.dart';
 
-/// Settings screen — shows the current user's info and a logout button.
+/// Settings screen — shows current user info and a logout button.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -12,7 +13,6 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
     final email = user?.email ?? 'Unknown user';
-    // Use everything before @ as the display name, capitalised.
     final name = email
         .split('@')
         .first
@@ -29,7 +29,6 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Page heading ────────────────────────────────────────────
               const Text(
                 'Settings',
                 style: TextStyle(
@@ -57,7 +56,6 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    // Avatar circle
                     Container(
                       width: 60,
                       height: 60,
@@ -81,7 +79,6 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    // Name + email
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,17 +109,8 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               // ── Account section ─────────────────────────────────────────
-              Text(
-                'Account',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.8,
-                ),
-              ),
+              _sectionLabel('Account'),
               const SizedBox(height: 10),
-
               _SettingsTile(
                 icon: Icons.email_outlined,
                 label: 'Email',
@@ -132,36 +120,29 @@ class SettingsScreen extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 8),
-              _SettingsTile(
-                icon: Icons.notifications_outlined,
-                label: 'Notifications',
-                trailing: Switch.adaptive(
-                  value: true,
-                  onChanged: (_) {},
-                  thumbColor: WidgetStateProperty.resolveWith(
-                    (states) => states.contains(WidgetState.selected)
-                        ? AppColors.primary
-                        : null,
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 32),
 
-              // ── Danger zone ─────────────────────────────────────────────
-              Text(
-                'Session',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.8,
+              // ── Admin Tools ─────────────────────────────────────────────
+              _sectionLabel('Admin Tools'),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AdminNoticesScreen()),
+                  );
+                },
+                child: _SettingsTile(
+                  icon: Icons.campaign_rounded,
+                  label: 'App Publisher (Notices)',
+                  trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 32),
 
-              // Logout button
+              // ── Session ─────────────────────────────────────────────────
+              _sectionLabel('Session'),
+              const SizedBox(height: 10),
               Consumer<AuthProvider>(
                 builder: (context, auth, _) => _LogoutTile(auth: auth),
               ),
@@ -173,9 +154,21 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: Colors.grey.shade500,
+        letterSpacing: 0.8,
+      ),
+    );
+  }
 }
 
-// ── Reusable settings row tile ─────────────────────────────────────────────────
+// ── Settings row tile ──────────────────────────────────────────────────────────
 
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
@@ -231,7 +224,7 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-// ── Logout tile with confirm dialog ───────────────────────────────────────────
+// ── Logout tile ────────────────────────────────────────────────────────────────
 
 class _LogoutTile extends StatelessWidget {
   final AuthProvider auth;
@@ -266,7 +259,7 @@ class _LogoutTile extends StatelessWidget {
 
     if (confirmed == true && context.mounted) {
       await context.read<AuthProvider>().signOut();
-      // AuthGate's stream listener will automatically navigate to LoginScreen.
+      // AuthGate's StreamBuilder sees session==null → shows LoginScreen.
     }
   }
 

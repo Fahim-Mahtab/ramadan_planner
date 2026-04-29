@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "E:/flutter/ramadan_planner/linux"
+    "cmake.sourceDirectory": "E:/flutter/ramadan_planner/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

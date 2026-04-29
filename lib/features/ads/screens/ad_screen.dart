@@ -4,19 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/ad_model.dart';
 import '../providers/ads_provider.dart';
-import '../../home/screens/home_screen.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// Full-screen ad splash shown immediately after login.
-///
-/// The user can:
-///  - Tap the ad to open its redirect URL
-///  - Tap "Skip" to go straight to [HomeScreen]
-///  - Wait for the auto-skip countdown to reach zero
-///
-/// If there are no active ads, it navigates to [HomeScreen] instantly.
+/// Full-screen ad splash.
+/// [onDone] is called when the user skips or countdown ends —
+/// [AuthGate] swaps in [HomeScreen] without a Navigator push.
 class AdScreen extends StatefulWidget {
-  const AdScreen({super.key});
+  final VoidCallback onDone;
+  const AdScreen({super.key, required this.onDone});
 
   @override
   State<AdScreen> createState() => _AdScreenState();
@@ -34,6 +29,10 @@ class _AdScreenState extends State<AdScreen> {
   @override
   void initState() {
     super.initState();
+    // Fetch freshest ads every time splash mounts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdsProvider>().refresh();
+    });
     _startCountdown();
   }
 
@@ -57,14 +56,7 @@ class _AdScreenState extends State<AdScreen> {
 
   void _goHome() {
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, a1, a2) => const HomeScreen(),
-        transitionsBuilder: (_, a1, _, child) =>
-            FadeTransition(opacity: a1, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+    widget.onDone(); // Tell AuthGate to show HomeScreen.
   }
 
   Future<void> _openUrl(String url) async {
@@ -296,119 +288,103 @@ class _FullscreenAdPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return GestureDetector(
       onTap: onTap,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Background image
+          // ── Background Image ──
           ad.imageUrl.isNotEmpty
               ? Image.network(
                   ad.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, _) => const _DarkPlaceholder(),
+                  errorBuilder: (_, _, _) => const _ImageError(),
                   loadingBuilder: (_, child, prog) {
                     if (prog == null) return child;
-                    return const _DarkPlaceholder();
+                    return const _ImageLoading();
                   },
                 )
-              : const _DarkPlaceholder(),
+              : const _ImageError(),
 
-          // Bottom gradient + title + CTA
+          // ── Bottom Gradient & Info ──
           Positioned(
-            bottom: 0,
             left: 0,
             right: 0,
+            bottom: 0,
             child: Container(
               padding: EdgeInsets.fromLTRB(
-                24,
+                20,
                 60,
-                24,
-                MediaQuery.of(context).padding.bottom + 70,
+                20,
+                MediaQuery.of(context).padding.bottom + 80, // Space for dots
               ),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Colors.black, Colors.transparent],
-                  stops: [0.0, 1.0],
+                  colors: [
+                    Colors.black.withValues(alpha: 0.9),
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // "Ad" badge
+                  // AD badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
-                      vertical: 3,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(4),
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.5),
+                      ),
                     ),
-                    child: const Text(
-                      'SPONSORED',
+                    child: Text(
+                      'AD',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.primary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(width: 12),
 
                   // Title
-                  Text(
-                    ad.title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: size.width > 600 ? 28 : 22,
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Tap CTA
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Learn More',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                          ],
-                        ),
+                  Expanded(
+                    child: Text(
+                      ad.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
                       ),
-                    ],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Arrow button
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ],
               ),
@@ -420,9 +396,18 @@ class _FullscreenAdPage extends StatelessWidget {
   }
 }
 
-class _DarkPlaceholder extends StatelessWidget {
-  const _DarkPlaceholder();
+class _ImageLoading extends StatelessWidget {
+  const _ImageLoading();
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(color: Colors.white38),
+    );
+  }
+}
 
+class _ImageError extends StatelessWidget {
+  const _ImageError();
   @override
   Widget build(BuildContext context) {
     return Container(

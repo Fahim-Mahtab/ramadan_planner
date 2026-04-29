@@ -8,8 +8,12 @@ import 'features/ads/providers/ads_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/auth_gate.dart';
 import 'features/salah/providers/salah_provider.dart';
+import 'features/salah/providers/prayer_times_provider.dart';
 import 'features/quran/providers/quran_provider.dart';
 import 'features/sunnah_checklist/providers/checklist_provider.dart';
+import 'features/dua/providers/dua_provider.dart';
+
+import 'features/notices/providers/notices_provider.dart';
 
 Future<void> main() async {
   // Required before any async work before runApp.
@@ -37,10 +41,15 @@ class MyApp extends StatelessWidget {
         // Ads provider — uses Supabase Realtime for live updates.
         ChangeNotifierProvider(create: (_) => AdsProvider()),
 
+        // Notices provider — uses Supabase Realtime for live updates.
+        ChangeNotifierProvider(create: (_) => NoticesProvider()),
+
         // Feature-specific providers.
         ChangeNotifierProvider(create: (_) => SalahProvider()),
+        ChangeNotifierProvider(create: (_) => PrayerTimesProvider()),
         ChangeNotifierProvider(create: (_) => QuranProvider()),
         ChangeNotifierProvider(create: (_) => ChecklistProvider()),
+        ChangeNotifierProvider(create: (_) => DuaProvider()),
       ],
       child: MaterialApp(
         title: 'Ramadan Planner',

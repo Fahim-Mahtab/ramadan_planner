@@ -68,7 +68,7 @@ class AdsProvider with ChangeNotifier {
       final data = await _client
           .from('ads')
           .select()
-          .eq('is_active', true) // RLS also enforces this server-side
+          .eq('is_active', true)
           .order('created_at', ascending: false);
 
       _ads = (data as List)
@@ -82,6 +82,9 @@ class AdsProvider with ChangeNotifier {
       _setLoading(false);
     }
   }
+
+  /// Force-refreshes ads. Called each time AdScreen mounts.
+  Future<void> refresh() => _fetchAds();
 
   void _setLoading(bool value) {
     _isLoading = value;

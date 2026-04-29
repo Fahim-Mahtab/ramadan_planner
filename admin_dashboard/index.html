@@ -1,233 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ramadan Planner — Ads Admin</title>
+    <title>Ramadan Planner | Admin Center</title>
 
     <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
 
     <style>
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
         :root {
-            --green: #13EC6D;
-            --dark: #0f172a;
-            --card: #1e293b;
-            --border: #334155;
-            --text: #e2e8f0;
-            --muted: #94a3b8;
-            --red: #ef4444;
-            --radius: 12px;
+            --primary: #13EC6D;
+            --primary-glow: rgba(19, 236, 109, 0.4);
+            --primary-dim: rgba(19, 236, 109, 0.1);
+            
+            --bg-base: #060913;
+            --glass-bg: rgba(20, 24, 40, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --danger: #ff4757;
+            --danger-dim: rgba(255, 71, 87, 0.15);
+
+            --radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: var(--dark);
-            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-base);
+            color: var(--text-main);
             min-height: 100vh;
-            padding: 24px 16px;
+            overflow-x: hidden;
+            padding: 30px 20px 80px;
         }
 
-        /* ── Layout ── */
+        /* ── Animated Background Orbs ── */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 0%, #0a1128 0%, var(--bg-base) 100%);
+        }
+        
+        .orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+        
+        .orb-1 {
+            background: var(--primary);
+            top: -200px;
+            right: -100px;
+        }
+        
+        .orb-2 {
+            background: #2563eb;
+            bottom: -200px;
+            left: -100px;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-100px, 100px) scale(1.2); }
+        }
+
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
+        /* ── Header & Navigation ── */
         header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 32px;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        header .logo {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(19, 236, 109, .15);
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(19,236,109,0.2), rgba(19,236,109,0.05));
+            border: 1px solid rgba(19,236,109,0.3);
             display: grid;
             place-items: center;
-            font-size: 22px;
+            font-size: 24px;
+            box-shadow: 0 0 20px var(--primary-glow);
         }
 
-        header h1 {
-            font-size: 20px;
+        .brand-text h1 {
+            font-size: 24px;
             font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #fff, var(--primary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        header span {
-            font-size: 13px;
-            color: var(--muted);
+        .brand-text span {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 400;
         }
 
-        /* ── Cards ── */
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 24px;
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--glass-bg);
+            padding: 6px;
+            border-radius: 100px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
         }
 
-        .card h2 {
-            font-size: 16px;
+        .nav-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 100px;
+            font-family: inherit;
             font-weight: 600;
-            margin-bottom: 20px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* ── Form ── */
+        .nav-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        /* ── Glass Cards ── */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Forms ── */
         .form-grid {
             display: grid;
-            gap: 14px;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         label {
-            font-size: 13px;
-            color: var(--muted);
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        input[type="text"],
-        input[type="url"] {
-            width: 100%;
-            background: var(--dark);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 14px;
-            color: var(--text);
             font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-left: 4px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: var(--text-main);
+            font-size: 15px;
+            font-family: inherit;
             outline: none;
-            transition: border-color .2s;
+            transition: var(--transition);
         }
 
-        input:focus {
-            border-color: var(--green);
+        textarea.input-field {
+            resize: vertical;
+            min-height: 100px;
         }
 
-        .row {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-dim);
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        .row>* {
-            flex: 1;
+        .input-field::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
         }
 
-        /* Toggle switch */
-        .toggle-row {
+        /* Toggle Switch */
+        .toggle-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
+            padding: 10px 4px;
         }
 
         .switch {
             position: relative;
-            width: 44px;
-            height: 24px;
+            width: 50px;
+            height: 28px;
         }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .switch input { opacity: 0; width: 0; height: 0; }
 
         .slider {
             position: absolute;
             inset: 0;
-            background: var(--border);
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
             cursor: pointer;
-            transition: .3s;
+            transition: var(--transition);
+            border: 1px solid var(--glass-border);
         }
 
         .slider::before {
             content: '';
             position: absolute;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             left: 3px;
             bottom: 3px;
             background: white;
             border-radius: 50%;
-            transition: .3s;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        input:checked+.slider {
-            background: var(--green);
+        input:checked + .slider {
+            background: var(--primary);
+            border-color: var(--primary);
         }
 
-        input:checked+.slider::before {
-            transform: translateX(20px);
+        input:checked + .slider::before {
+            transform: translateX(22px);
         }
 
         /* Buttons */
-        .btn {
-            padding: 10px 20px;
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
             border: none;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 12px;
+            font-size: 15px;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: opacity .2s;
+            transition: var(--transition);
         }
 
-        .btn:hover {
-            opacity: .85;
-        }
-
-        .btn-primary {
-            background: var(--green);
-            color: #0f172a;
-        }
-
-        .btn-danger {
-            background: var(--red);
-            color: white;
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        .btn-toggle {
-            background: var(--border);
-            color: var(--text);
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        .btn:disabled {
-            opacity: .4;
+        .btn-action:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none !important;
         }
 
-        /* Upload area */
-        .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 20px;
+        .btn-action:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn-action:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            box-shadow: 0 8px 25px rgba(19, 236, 109, 0.6);
+        }
+
+        /* File Upload */
+        .upload-dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 30px 20px;
             text-align: center;
             cursor: pointer;
-            transition: border-color .2s;
+            transition: var(--transition);
             position: relative;
+            background: rgba(0, 0, 0, 0.2);
         }
 
-        .upload-area:hover {
-            border-color: var(--green);
+        .upload-dropzone:hover {
+            border-color: var(--primary);
+            background: var(--primary-dim);
         }
 
-        .upload-area input {
+        .upload-dropzone input {
             position: absolute;
             inset: 0;
             opacity: 0;
@@ -235,489 +369,1152 @@
             width: 100%;
         }
 
-        .upload-area p {
-            font-size: 13px;
-            color: var(--muted);
-            margin-top: 6px;
+        .upload-icon {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 8px;
         }
 
-        /* App card preview */
-        #appPreview {
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+        .upload-subtext {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Previews */
+        .image-preview-container {
             display: none;
             margin-top: 16px;
             border-radius: 16px;
             overflow: hidden;
-            background: #1c1c2e;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+            background: #000;
+            border: 1px solid var(--glass-border);
+            position: relative;
         }
 
-        #appPreview img {
+        .image-preview-container img {
             width: 100%;
-            max-height: 380px;
+            max-height: 250px;
             object-fit: contain;
             display: block;
-            background: #1c1c2e;
         }
 
-        #appPreview .preview-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-        }
-
-        #appPreview .ad-badge {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            padding: 3px 7px;
-            border-radius: 6px;
-            color: var(--green);
-            border: 1px solid rgba(19, 236, 109, .4);
-            background: rgba(19, 236, 109, .12);
-            flex-shrink: 0;
-        }
-
-        #appPreview .preview-title {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        #appPreview .preview-arrow {
+        .clear-preview {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            color: white;
+            border: none;
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: var(--green);
+            cursor: pointer;
             display: grid;
             place-items: center;
-            flex-shrink: 0;
-            font-size: 14px;
+            transition: var(--transition);
         }
+        .clear-preview:hover { background: var(--danger); }
 
-        #previewDimensions {
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 6px;
-            text-align: center;
-        }
-
-        /* ── Ads table ── */
-        .ads-list {
+        /* List Items */
+        .data-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
 
-        .ad-item {
+        .list-item {
             display: flex;
             align-items: center;
-            gap: 14px;
-            background: var(--dark);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px 16px;
+            gap: 20px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
         }
 
-        .ad-thumb {
-            width: 72px;
-            height: 52px;
-            border-radius: 6px;
-            object-fit: cover;
-            background: var(--border);
+        .list-item:hover {
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .item-visual {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
             flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
         }
 
-        .ad-info {
+        .item-visual img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-visual .icon-placeholder {
+            font-size: 32px;
+            color: var(--primary);
+            opacity: 0.8;
+        }
+
+        .item-content {
             flex: 1;
             min-width: 0;
         }
 
-        .ad-title {
+        .item-title {
+            font-size: 16px;
             font-weight: 600;
-            font-size: 14px;
+            color: white;
+            margin-bottom: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .ad-url {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 2px;
+        .item-desc {
+            font-size: 13px;
+            color: var(--text-muted);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 90%;
         }
 
-        .badge {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 20px;
-        }
-
-        .badge-active {
-            background: rgba(19, 236, 109, .15);
-            color: var(--green);
-        }
-
-        .badge-inactive {
-            background: rgba(148, 163, 184, .1);
-            color: var(--muted);
-        }
-
-        .ad-actions {
-            display: flex;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
             gap: 6px;
-            flex-shrink: 0;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 8px;
         }
 
-        /* ── Toast ── */
+        .status-active {
+            background: var(--primary-dim);
+            color: var(--primary);
+            border: 1px solid rgba(19, 236, 109, 0.2);
+        }
+
+        .status-inactive {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .item-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255,255,255,0.02);
+            color: var(--text-muted);
+        }
+
+        .btn-icon:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn-icon.delete:hover {
+            color: var(--danger);
+            background: var(--danger-dim);
+            border-color: rgba(255, 71, 87, 0.3);
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
+        }
+
+        .btn-icon.toggle:hover {
+            color: var(--primary);
+            background: var(--primary-dim);
+            border-color: rgba(19, 236, 109, 0.3);
+        }
+
+        /* Toast Notifications */
         #toast {
             position: fixed;
-            bottom: 24px;
+            bottom: 30px;
             left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 13px;
+            transform: translate(-50%, 20px);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 500;
             opacity: 0;
-            transition: opacity .3s;
+            transition: var(--transition);
             pointer-events: none;
-            z-index: 99;
-            white-space: nowrap;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
         #toast.show {
             opacity: 1;
-        }
-
-        #status {
-            font-size: 13px;
-            color: var(--muted);
-            min-height: 20px;
+            transform: translate(-50%, 0);
         }
 
         .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--border);
-            border-top-color: var(--green);
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: white;
             border-radius: 50%;
-            animation: spin .6s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
+            animation: spin 0.8s linear infinite;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .empty {
+        .empty-state {
             text-align: center;
-            color: var(--muted);
-            padding: 32px;
-            font-size: 14px;
+            padding: 40px 20px;
+            color: var(--text-muted);
         }
+        
+        .empty-state span.material-symbols-rounded {
+            font-size: 48px;
+            opacity: 0.5;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Tab Logic */
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Floating Bot Assistant ── */
+        .floating-bot-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #0fa04a);
+            color: #000;
+            border: none;
+            box-shadow: 0 10px 25px var(--primary-glow);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        .floating-bot-btn:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 15px 30px rgba(19, 236, 109, 0.6);
+        }
+        .floating-bot-btn .material-symbols-rounded {
+            font-size: 32px;
+        }
+
+        .bot-window {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            width: 380px;
+            height: 550px;
+            max-height: calc(100vh - 140px);
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            transform-origin: bottom right;
+        }
+        .bot-window.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .bot-window .chat-header {
+            height: 70px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 0;
+        }
+
+        .bot-window .header-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .bot-window .header-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .bot-window .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .bot-window .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 4px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+        }
+
+        .bot-window .icon-btn:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .bot-window .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .bot-window .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        .bot-window .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        .bot-window .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .bot-window .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .bot-window .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .bot-window .avatar .material-symbols-rounded {
+            font-size: 18px;
+        }
+
+        .bot-window .bot .avatar {
+            background: linear-gradient(135deg, var(--primary), #0fa04a);
+            color: #000;
+        }
+
+        .bot-window .user .avatar {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .bot-window .bubble {
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .bot-window .bot .bubble {
+            background: rgba(0, 0, 0, 0.4);
+            border-top-left-radius: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .bot-window .user .bubble {
+            background: var(--primary-dim);
+            border: 1px solid rgba(19, 236, 109, 0.2);
+            border-top-right-radius: 4px;
+        }
+
+        .bot-window .loading-dots {
+            display: flex;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .bot-window .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .bot-window .dot:nth-child(1) { animation-delay: -0.32s; }
+        .bot-window .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        .bot-window .chat-input-container {
+            padding: 0 20px 20px;
+        }
+
+        .bot-window .input-form {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 6px 12px;
+            transition: var(--transition);
+        }
+
+        .bot-window .input-form:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-dim);
+        }
+
+        .bot-window #userInput {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 14px;
+            padding: 8px 4px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .bot-window #sendBtn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .bot-window #sendBtn:hover {
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+        .bot-window #sendBtn .material-symbols-rounded {
+            font-size: 16px;
+        }
+
+        .bot-window .input-footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
     </style>
 </head>
-
 <body>
-    <div class="container">
 
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="container">
         <!-- Header -->
         <header>
-            <div class="logo">🌙</div>
-            <div>
-                <h1>Ads Admin</h1>
-                <span>Ramadan Planner — real-time ad manager</span>
+            <div class="brand">
+                <div class="logo-box">
+                    <span class="material-symbols-rounded" style="color: var(--primary);">mosque</span>
+                </div>
+                <div class="brand-text">
+                    <h1>Nexus Dashboard</h1>
+                    <span>Ramadan Planner Live Operations</span>
+                </div>
+            </div>
+            
+            <div class="nav-tabs">
+                <button class="nav-btn active" id="tabAds" onclick="switchTab('ads')">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">ad_units</span>
+                    Advertisements
+                </button>
+                <button class="nav-btn" id="tabNotices" onclick="switchTab('notices')">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">campaign</span>
+                    Notices & Alerts
+                </button>
             </div>
         </header>
 
-        <!-- Create Ad Form -->
-        <div class="card">
-            <h2>➕ Create New Ad</h2>
-            <form class="form-grid" id="adForm">
-
-                <div>
-                    <label>Ad Title</label>
-                    <input type="text" id="title" placeholder="e.g. Ramadan Special Offer" required />
+        <!-- =================== ADS TAB =================== -->
+        <div id="paneAds" class="tab-pane active">
+            
+            <!-- Create Form -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <span class="material-symbols-rounded" style="color: var(--primary);">add_circle</span>
+                    <h2>Create Advertisement</h2>
                 </div>
-
-                <div class="row">
-                    <div>
-                        <label>Redirect URL (where user goes on tap)</label>
-                        <input type="url" id="redirectUrl" placeholder="https://example.com/offer" required />
+                
+                <form class="form-grid" id="adForm">
+                    <div class="input-group">
+                        <label>Campaign Title</label>
+                        <input type="text" id="adTitle" class="input-field" placeholder="E.g., Ramadan Special Offer" required />
                     </div>
-                </div>
 
-                <div>
-                    <label>Ad Image</label>
-                    <div class="upload-area" id="uploadArea">
-                        <input type="file" id="imageFile" accept="image/*" />
-                        <div id="uploadPrompt">
-                            <div style="font-size:28px;">🖼</div>
-                            <p>Click to upload image (JPG, PNG, WebP)</p>
+                    <div class="input-group">
+                        <label>Destination URL</label>
+                        <input type="url" id="adRedirectUrl" class="input-field" placeholder="https://example.com/offer" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label>Creative Banner</label>
+                        <div class="upload-dropzone" id="adUploadArea">
+                            <input type="file" id="adImageFile" accept="image/*" />
+                            <span class="material-symbols-rounded upload-icon">cloud_upload</span>
+                            <div class="upload-text">Browse or drop an image</div>
+                            <div class="upload-subtext">JPG, PNG, WebP (Max 5MB)</div>
+                        </div>
+                        
+                        <div id="adPreviewContainer" class="image-preview-container">
+                            <button type="button" class="clear-preview" onclick="clearAdImage()">
+                                <span class="material-symbols-rounded" style="font-size:18px;">close</span>
+                            </button>
+                            <img id="adPreviewImg" alt="Selected creative" />
                         </div>
                     </div>
-                    <!-- Live app-like preview -->
-                    <div id="appPreview">
-                        <img id="previewImg" alt="ad preview" />
-                        <div class="preview-bar">
-                            <span class="ad-badge">AD</span>
-                            <span class="preview-title" id="previewTitle">Ad title will appear here</span>
-                            <span class="preview-arrow">→</span>
-                        </div>
+
+                    <div class="toggle-wrapper">
+                        <label class="switch">
+                            <input type="checkbox" id="adIsActive" checked />
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:14px; font-weight:500;">Activate campaign immediately</span>
                     </div>
-                    <div id="previewDimensions"></div>
+
+                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 16px;">
+                        <button type="submit" class="btn-action btn-submit" id="adSubmitBtn">
+                            <span class="material-symbols-rounded" style="font-size:20px;">rocket_launch</span>
+                            Publish Campaign
+                        </button>
+                        <div id="adStatus" style="font-size: 14px; color: var(--text-muted); display: flex; align-items:center; gap: 8px;"></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- List -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <span class="material-symbols-rounded" style="color: white;">format_list_bulleted</span>
+                    <h2>Active Campaigns</h2>
                 </div>
-
-                <div class="toggle-row">
-                    <label class="switch">
-                        <input type="checkbox" id="isActive" checked />
-                        <span class="slider"></span>
-                    </label>
-                    <span style="font-size:14px;">Active (visible in app)</span>
+                <div class="data-list" id="adsList">
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded" style="animation: spin 1s linear infinite;">progress_activity</span>
+                        <p>Syncing data...</p>
+                    </div>
                 </div>
-
-                <div style="display:flex;gap:12px;align-items:center;">
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Publish Ad</button>
-                    <span id="status"></span>
-                </div>
-
-            </form>
-        </div>
-
-        <!-- Existing Ads -->
-        <div class="card">
-            <h2>📋 Existing Ads</h2>
-            <div class="ads-list" id="adsList">
-                <div class="empty"><span class="spinner"></span> Loading...</div>
             </div>
         </div>
 
+        <!-- =================== NOTICES TAB =================== -->
+        <div id="paneNotices" class="tab-pane">
+            
+            <!-- Create Form -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <span class="material-symbols-rounded" style="color: var(--primary);">add_alert</span>
+                    <h2>Broadcast Notice</h2>
+                </div>
+                
+                <form class="form-grid" id="noticeForm">
+                    <div class="input-group">
+                        <label>Announcement Title</label>
+                        <input type="text" id="noticeTitle" class="input-field" placeholder="E.g., System Update or General News" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label>Detailed Message (Optional)</label>
+                        <textarea id="noticeMessage" class="input-field" placeholder="Elaborate on the announcement..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Hero Image / Banner (Optional)</label>
+                        <div class="upload-dropzone" id="noticeUploadArea">
+                            <input type="file" id="noticeImageFile" accept="image/*" />
+                            <span class="material-symbols-rounded upload-icon">imagesmode</span>
+                            <div class="upload-text">Attach an image to this notice</div>
+                            <div class="upload-subtext">Optional. Makes the notice stand out.</div>
+                        </div>
+                        
+                        <div id="noticePreviewContainer" class="image-preview-container">
+                            <button type="button" class="clear-preview" onclick="clearNoticeImage()">
+                                <span class="material-symbols-rounded" style="font-size:18px;">close</span>
+                            </button>
+                            <img id="noticePreviewImg" alt="Selected creative" />
+                        </div>
+                    </div>
+
+                    <div class="toggle-wrapper">
+                        <label class="switch">
+                            <input type="checkbox" id="noticeIsActive" checked />
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:14px; font-weight:500;">Broadcast live to all users</span>
+                    </div>
+
+                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 16px;">
+                        <button type="submit" class="btn-action btn-submit" id="noticeSubmitBtn">
+                            <span class="material-symbols-rounded" style="font-size:20px;">send</span>
+                            Broadcast Now
+                        </button>
+                        <div id="noticeStatus" style="font-size: 14px; color: var(--text-muted); display: flex; align-items:center; gap: 8px;"></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- List -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <span class="material-symbols-rounded" style="color: white;">history</span>
+                    <h2>Broadcast History</h2>
+                </div>
+                <div class="data-list" id="noticesList">
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded" style="animation: spin 1s linear infinite;">progress_activity</span>
+                        <p>Loading history...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating Bot Button -->
+    <button class="floating-bot-btn" id="floatingBotBtn">
+        <span class="material-symbols-rounded">robot_2</span>
+    </button>
+
+    <!-- Bot Chat Window -->
+    <div class="bot-window" id="botWindow">
+        <header class="chat-header">
+            <div class="header-info">
+                <h3>Nexus AI Assistant</h3>
+                <p>Connected to Supabase Data</p>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" title="Clear Chat" id="clearChatBtn"><span class="material-symbols-rounded">delete</span></button>
+                <button class="icon-btn" title="Close" id="closeBotBtn"><span class="material-symbols-rounded">close</span></button>
+            </div>
+        </header>
+
+        <div class="chat-messages" id="chatContainer">
+            <!-- Initial Welcome Message -->
+            <div class="message bot">
+                <div class="avatar"><span class="material-symbols-rounded">robot_2</span></div>
+                <div class="bubble">
+                    <p>Hello! I'm your Nexus AI assistant. I can help you search the database for <strong>Public Notices</strong> and <strong>Promotional Ads</strong>. What would you like to know?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-container">
+            <form class="input-form" id="chatForm">
+                <input type="text" id="userInput" placeholder="Ask about ads or announcements..." autocomplete="off" required>
+                <button type="submit" id="sendBtn">
+                    <span class="material-symbols-rounded">send</span>
+                </button>
+            </form>
+            <div class="input-footer">Powered by n8n & Supabase</div>
+        </div>
     </div>
 
     <!-- Toast -->
     <div id="toast"></div>
 
     <script>
-        // ── CONFIG — change these to your actual values ──────────────────────────────
+        // ── SUPABASE CONFIG ──
         const SUPABASE_URL = 'https://tscpygroiqvulpughnwf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_gPRbFyQLrya70Jzjili4SQ_2jH7nrfW';
         const STORAGE_BUCKET = 'ad-images';
-        // ─────────────────────────────────────────────────────────────────────────────
 
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // ── Image preview ─────────────────────────────────────────────────────────
-        const imageFileInput = document.getElementById('imageFile');
-        const uploadPrompt = document.getElementById('uploadPrompt');
-        const appPreview = document.getElementById('appPreview');
-        const previewImg = document.getElementById('previewImg');
-        const previewDimensions = document.getElementById('previewDimensions');
-        const previewTitle = document.getElementById('previewTitle');
-
-        // Keep preview title in sync with the title input
-        document.getElementById('title').addEventListener('input', (e) => {
-            previewTitle.textContent = e.target.value.trim() || 'Ad title will appear here';
-        });
-
-        imageFileInput.addEventListener('change', () => {
-            const file = imageFileInput.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                previewImg.onload = function () {
-                    const w = this.naturalWidth;
-                    const h = this.naturalHeight;
-                    previewDimensions.textContent = `Image: ${w} × ${h} px  •  ${(file.size / 1024).toFixed(0)} KB`;
-                };
-                previewImg.src = e.target.result;
-                uploadPrompt.style.display = 'none';
-                appPreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // ── Form submit ───────────────────────────────────────────────────────────
-        document.getElementById('adForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const title = document.getElementById('title').value.trim();
-            const redirectUrl = document.getElementById('redirectUrl').value.trim();
-            const isActive = document.getElementById('isActive').checked;
-            const imageFile = imageFileInput.files[0];
-            const submitBtn = document.getElementById('submitBtn');
-            const status = document.getElementById('status');
-
-            if (!imageFile) { toast('Please select an image.', true); return; }
-
-            submitBtn.disabled = true;
-            status.innerHTML = '<span class="spinner"></span> Uploading image...';
-
-            try {
-                // 1. Upload image to Supabase Storage
-                const ext = imageFile.name.split('.').pop();
-                const filePath = `ads/${Date.now()}.${ext}`;
-
-                const { error: uploadError } = await db.storage
-                    .from(STORAGE_BUCKET)
-                    .upload(filePath, imageFile, { contentType: imageFile.type });
-
-                if (uploadError) throw uploadError;
-
-                // 2. Get the public URL
-                const { data: { publicUrl } } = db.storage
-                    .from(STORAGE_BUCKET)
-                    .getPublicUrl(filePath);
-
-                status.innerHTML = '<span class="spinner"></span> Saving ad...';
-
-                // 3. Insert the Ad row
-                const { error: insertError } = await db.from('ads').insert({
-                    title,
-                    image_url: publicUrl,
-                    redirect_url: redirectUrl,
-                    is_active: isActive,
-                });
-
-                if (insertError) throw insertError;
-
-                toast('✅ Ad published successfully!');
-                e.target.reset();
-                appPreview.style.display = 'none';
-                uploadPrompt.style.display = 'block';
-                previewDimensions.textContent = '';
-                previewTitle.textContent = 'Ad title will appear here';
+        
+        // ── TAB LOGIC ──
+        function switchTab(tab) {
+            document.getElementById('paneAds').classList.remove('active');
+            document.getElementById('paneNotices').classList.remove('active');
+            document.getElementById('tabAds').classList.remove('active');
+            document.getElementById('tabNotices').classList.remove('active');
+            
+            if (tab === 'ads') {
+                document.getElementById('paneAds').classList.add('active');
+                document.getElementById('tabAds').classList.add('active');
                 loadAds();
-
-            } catch (err) {
-                console.error(err);
-                toast('❌ Error: ' + err.message, true);
-            } finally {
-                submitBtn.disabled = false;
-                status.innerHTML = '';
+            } else {
+                document.getElementById('paneNotices').classList.add('active');
+                document.getElementById('tabNotices').classList.add('active');
+                loadNotices();
             }
-        });
-
-        // ── Load ads ──────────────────────────────────────────────────────────────
-        async function loadAds() {
-            const list = document.getElementById('adsList');
-            const { data, error } = await db
-                .from('ads')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                list.innerHTML = `<div class="empty">Error loading ads: ${error.message}</div>`;
-                return;
-            }
-            if (!data.length) {
-                list.innerHTML = '<div class="empty">No ads yet. Create your first one above!</div>';
-                return;
-            }
-
-            list.innerHTML = data.map(ad => `
-      <div class="ad-item" id="ad-${ad.id}">
-        <img class="ad-thumb" src="${ad.image_url}" alt="${ad.title}" onerror="this.src=''" />
-        <div class="ad-info">
-          <div class="ad-title">${escHtml(ad.title)}</div>
-          <div class="ad-url">${escHtml(ad.redirect_url)}</div>
-        </div>
-        <span class="badge ${ad.is_active ? 'badge-active' : 'badge-inactive'}">
-          ${ad.is_active ? 'Active' : 'Inactive'}
-        </span>
-        <div class="ad-actions">
-          <button class="btn btn-toggle" onclick="toggleAd('${ad.id}', ${ad.is_active})">
-            ${ad.is_active ? 'Deactivate' : 'Activate'}
-          </button>
-          <button class="btn btn-danger" onclick="deleteAd('${ad.id}', '${filePath(ad.image_url)}')">
-            Delete
-          </button>
-        </div>
-      </div>
-    `).join('');
         }
 
-        // ── Toggle active ─────────────────────────────────────────────────────────
-        async function toggleAd(id, currentActive) {
-            const { error } = await db
-                .from('ads')
-                .update({ is_active: !currentActive })
-                .eq('id', id);
-
-            if (error) { toast('❌ ' + error.message, true); return; }
-            toast(currentActive ? 'Ad deactivated.' : 'Ad activated!');
-            loadAds();
+        // ── UI HELPERS ──
+        let toastTimer;
+        function showToast(msg, icon = 'check_circle', isError = false) {
+            const el = document.getElementById('toast');
+            el.innerHTML = `<span class="material-symbols-rounded" style="color: ${isError ? 'var(--danger)' : 'var(--primary)'}">${icon}</span> ${msg}`;
+            el.style.borderColor = isError ? 'rgba(255,71,87,0.4)' : 'var(--glass-border)';
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
         }
 
-        // ── Delete ad ─────────────────────────────────────────────────────────────
-        async function deleteAd(id, imagePath) {
-            if (!confirm('Delete this ad? This cannot be undone.')) return;
-
-            // Remove DB row
-            const { error } = await db.from('ads').delete().eq('id', id);
-            if (error) { toast('❌ ' + error.message, true); return; }
-
-            // Best-effort: remove image from storage
-            if (imagePath) {
-                await db.storage.from(STORAGE_BUCKET).remove([imagePath]);
-            }
-
-            toast('Ad deleted.');
-            loadAds();
+        function extractPath(url) {
+            try {
+                const u = new URL(url);
+                const parts = u.pathname.split(`/object/public/${STORAGE_BUCKET}/`);
+                return parts[1] || '';
+            } catch { return ''; }
         }
 
-        // ── Realtime subscription — list auto-refreshes when another admin acts ──
-        db.channel('admin:ads')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, loadAds)
-            .subscribe();
-
-        // ── Helpers ───────────────────────────────────────────────────────────────
-        function escHtml(str) {
-            return String(str)
+        function escapeHTML(str) {
+            return String(str || '')
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
         }
 
-        // Extract storage path from a full public URL
-        function filePath(url) {
+        // ==========================================
+        // ── ADS MODULE ────────────────────────────
+        // ==========================================
+        const adImageInput = document.getElementById('adImageFile');
+        const adPreviewBox = document.getElementById('adPreviewContainer');
+        const adPreviewImg = document.getElementById('adPreviewImg');
+        const adDropArea = document.getElementById('adUploadArea');
+
+        function clearAdImage() {
+            adImageInput.value = '';
+            adPreviewBox.style.display = 'none';
+            adDropArea.style.display = 'block';
+        }
+
+        adImageInput.addEventListener('change', () => {
+            const file = adImageInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                adPreviewImg.src = e.target.result;
+                adDropArea.style.display = 'none';
+                adPreviewBox.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('adForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = adImageInput.files[0];
+            if (!file) { showToast('Image is required for Ads', 'error', true); return; }
+
+            const btn = document.getElementById('adSubmitBtn');
+            const stat = document.getElementById('adStatus');
+            btn.disabled = true;
+            
             try {
-                const u = new URL(url);
-                // Path is: /storage/v1/object/public/<bucket>/<path>
-                const parts = u.pathname.split(`/object/public/${STORAGE_BUCKET}/`);
-                return parts[1] || '';
-            } catch { return ''; }
+                stat.innerHTML = '<div class="spinner"></div><span>Uploading assets...</span>';
+                const ext = file.name.split('.').pop();
+                const path = `ads/${Date.now()}.${ext}`;
+
+                const { error: upErr } = await db.storage.from(STORAGE_BUCKET).upload(path, file);
+                if (upErr) throw upErr;
+
+                const url = db.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+
+                stat.innerHTML = '<div class="spinner"></div><span>Finalizing...</span>';
+                
+                const { error: inErr } = await db.from('ads').insert({
+                    title: document.getElementById('adTitle').value.trim(),
+                    redirect_url: document.getElementById('adRedirectUrl').value.trim(),
+                    image_url: url,
+                    is_active: document.getElementById('adIsActive').checked,
+                });
+                
+                if (inErr) throw inErr;
+
+                showToast('Campaign successfully launched!');
+                e.target.reset();
+                clearAdImage();
+                loadAds();
+            } catch (err) {
+                showToast(err.message, 'error', true);
+            } finally {
+                btn.disabled = false;
+                stat.innerHTML = '';
+            }
+        });
+
+        async function loadAds() {
+            const list = document.getElementById('adsList');
+            const { data, error } = await db.from('ads').select('*').order('created_at', { ascending: false });
+
+            if (error) { list.innerHTML = `<div class="empty-state">Error: ${error.message}</div>`; return; }
+            if (!data.length) { 
+                list.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">ad_units</span><p>No active campaigns found.</p></div>`; 
+                return; 
+            }
+
+            list.innerHTML = data.map(ad => `
+                <div class="list-item">
+                    <div class="item-visual"><img src="${ad.image_url}" onerror="this.src=''" /></div>
+                    <div class="item-content">
+                        <div class="item-title">${escapeHTML(ad.title)}</div>
+                        <div class="item-desc">${escapeHTML(ad.redirect_url)}</div>
+                        <div class="status-badge ${ad.is_active ? 'status-active' : 'status-inactive'}">
+                            <div class="status-dot"></div>
+                            ${ad.is_active ? 'Live' : 'Paused'}
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-icon toggle" title="Toggle visibility" onclick="toggleRecord('ads', '${ad.id}', ${ad.is_active})">
+                            <span class="material-symbols-rounded">${ad.is_active ? 'visibility_off' : 'visibility'}</span>
+                        </button>
+                        <button class="btn-icon delete" title="Delete permanently" onclick="deleteRecord('ads', '${ad.id}', '${extractPath(ad.image_url)}')">
+                            <span class="material-symbols-rounded">delete</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        let toastTimer;
-        function toast(msg, isError = false) {
-            const el = document.getElementById('toast');
-            el.textContent = msg;
-            el.style.borderColor = isError ? 'var(--red)' : 'var(--border)';
-            el.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+        // ==========================================
+        // ── NOTICES MODULE ────────────────────────
+        // ==========================================
+        const noticeImageInput = document.getElementById('noticeImageFile');
+        const noticePreviewBox = document.getElementById('noticePreviewContainer');
+        const noticePreviewImg = document.getElementById('noticePreviewImg');
+        const noticeDropArea = document.getElementById('noticeUploadArea');
+
+        function clearNoticeImage() {
+            noticeImageInput.value = '';
+            noticePreviewBox.style.display = 'none';
+            noticeDropArea.style.display = 'block';
         }
 
-        // Initial load
+        noticeImageInput.addEventListener('change', () => {
+            const file = noticeImageInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                noticePreviewImg.src = e.target.result;
+                noticeDropArea.style.display = 'none';
+                noticePreviewBox.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('noticeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('noticeSubmitBtn');
+            const stat = document.getElementById('noticeStatus');
+            btn.disabled = true;
+
+            try {
+                let url = null;
+                const file = noticeImageInput.files[0];
+                
+                if (file) {
+                    stat.innerHTML = '<div class="spinner"></div><span>Uploading banner...</span>';
+                    const ext = file.name.split('.').pop();
+                    const path = `notices/${Date.now()}.${ext}`;
+
+                    const { error: upErr } = await db.storage.from(STORAGE_BUCKET).upload(path, file);
+                    if (upErr) throw upErr;
+                    url = db.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+                }
+
+                stat.innerHTML = '<div class="spinner"></div><span>Broadcasting...</span>';
+                
+                const msg = document.getElementById('noticeMessage').value.trim();
+                const { error: inErr } = await db.from('notices').insert({
+                    title: document.getElementById('noticeTitle').value.trim(),
+                    message: msg || null,
+                    image_url: url,
+                    is_active: document.getElementById('noticeIsActive').checked,
+                });
+                
+                if (inErr) throw inErr;
+
+                showToast('Notice broadcasted to all users!', 'campaign');
+                e.target.reset();
+                clearNoticeImage();
+                loadNotices();
+            } catch (err) {
+                showToast(err.message, 'error', true);
+            } finally {
+                btn.disabled = false;
+                stat.innerHTML = '';
+            }
+        });
+
+        async function loadNotices() {
+            const list = document.getElementById('noticesList');
+            const { data, error } = await db.from('notices').select('*').order('created_at', { ascending: false });
+
+            if (error) { list.innerHTML = `<div class="empty-state">Error: ${error.message}</div>`; return; }
+            if (!data.length) { 
+                list.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">notifications_active</span><p>No notices found.</p></div>`; 
+                return; 
+            }
+
+            list.innerHTML = data.map(notice => `
+                <div class="list-item">
+                    <div class="item-visual">
+                        ${notice.image_url 
+                            ? `<img src="${notice.image_url}" onerror="this.style.display='none'" />` 
+                            : `<span class="material-symbols-rounded icon-placeholder">campaign</span>`
+                        }
+                    </div>
+                    <div class="item-content">
+                        <div class="item-title">${escapeHTML(notice.title)}</div>
+                        <div class="item-desc">${escapeHTML(notice.message || 'No additional details provided.')}</div>
+                        <div class="status-badge ${notice.is_active ? 'status-active' : 'status-inactive'}">
+                            <div class="status-dot"></div>
+                            ${notice.is_active ? 'Broadcasting' : 'Archived'}
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-icon toggle" title="Toggle visibility" onclick="toggleRecord('notices', '${notice.id}', ${notice.is_active})">
+                            <span class="material-symbols-rounded">${notice.is_active ? 'visibility_off' : 'visibility'}</span>
+                        </button>
+                        <button class="btn-icon delete" title="Delete permanently" onclick="deleteRecord('notices', '${notice.id}', '${notice.image_url ? extractPath(notice.image_url) : ''}')">
+                            <span class="material-symbols-rounded">delete</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // ── COMMON ACTIONS ────────────────────────
+        // ==========================================
+        async function toggleRecord(table, id, currentActive) {
+            const { error } = await db.from(table).update({ is_active: !currentActive }).eq('id', id);
+            if (error) { showToast(error.message, 'error', true); return; }
+            showToast(`Status updated successfully!`);
+            table === 'ads' ? loadAds() : loadNotices();
+        }
+
+        async function deleteRecord(table, id, imagePath) {
+            if (!confirm(`Are you sure you want to permanently delete this ${table.slice(0,-1)}?`)) return;
+            const { error } = await db.from(table).delete().eq('id', id);
+            if (error) { showToast(error.message, 'error', true); return; }
+            
+            // Cleanup storage if needed
+            if (imagePath) db.storage.from(STORAGE_BUCKET).remove([imagePath]);
+            
+            showToast('Record deleted permanently', 'delete');
+            table === 'ads' ? loadAds() : loadNotices();
+        }
+
+        // REALTIME
+        db.channel('nexus:ads').on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, loadAds).subscribe();
+        db.channel('nexus:notices').on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, () => {
+            if(document.getElementById('paneNotices').classList.contains('active')) loadNotices();
+        }).subscribe();
+
+        // INIT
         loadAds();
+
+        // ==========================================
+        // ── BOT INTEGRATION ───────────────────────
+        // ==========================================
+        const floatingBotBtn = document.getElementById('floatingBotBtn');
+        const botWindow = document.getElementById('botWindow');
+        const closeBotBtn = document.getElementById('closeBotBtn');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const chatContainer = document.getElementById('chatContainer');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+
+        const BOT_WEBHOOK_URL = 'https://97-266.n8n.dignityhost.com/webhook/235fc630-6050-4a34-97b0-6188a3aefc98';
+        let botSessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+
+        floatingBotBtn.addEventListener('click', () => {
+            botWindow.classList.toggle('open');
+            if (botWindow.classList.contains('open')) {
+                userInput.focus();
+            }
+        });
+
+        closeBotBtn.addEventListener('click', () => {
+            botWindow.classList.remove('open');
+        });
+
+        function scrollBotToBottom() {
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        function addBotMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.classList.add('avatar');
+            avatarDiv.innerHTML = sender === 'user' ? '<span class="material-symbols-rounded">person</span>' : '<span class="material-symbols-rounded">robot_2</span>';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.classList.add('bubble');
+
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            bubbleDiv.innerHTML = `<p>${formattedText}</p>`;
+
+            messageDiv.appendChild(avatarDiv);
+            messageDiv.appendChild(bubbleDiv);
+            chatContainer.appendChild(messageDiv);
+
+            scrollBotToBottom();
+        }
+
+        function showBotLoading() {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot', 'loading-msg');
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.classList.add('avatar');
+            avatarDiv.innerHTML = '<span class="material-symbols-rounded">robot_2</span>';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.classList.add('bubble');
+            bubbleDiv.innerHTML = `
+                <div class="loading-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            `;
+
+            messageDiv.appendChild(avatarDiv);
+            messageDiv.appendChild(bubbleDiv);
+            chatContainer.appendChild(messageDiv);
+
+            scrollBotToBottom();
+            return messageDiv;
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addBotMessage(text, 'user');
+            userInput.value = '';
+
+            const loadingEl = showBotLoading();
+
+            try {
+                const response = await fetch(BOT_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chatInput: text, sessionId: botSessionId })
+                });
+
+                const data = await response.json();
+                loadingEl.remove();
+
+                let botReply = "I couldn't process that.";
+                if (data && data.output) {
+                    botReply = data.output;
+                } else if (typeof data === 'string') {
+                    botReply = data;
+                } else if (data && data.message) {
+                    botReply = data.message;
+                } else {
+                    botReply = JSON.stringify(data);
+                }
+
+                addBotMessage(botReply, 'bot');
+            } catch (error) {
+                console.error('Webhook error:', error);
+                loadingEl.remove();
+                addBotMessage(`*Connection Error:* The AI service is currently unreachable.`, 'bot');
+            }
+        });
+
+        clearChatBtn.addEventListener('click', () => {
+            const welcomeMessage = chatContainer.firstElementChild;
+            chatContainer.innerHTML = '';
+            if (welcomeMessage) chatContainer.appendChild(welcomeMessage);
+            botSessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+        });
     </script>
 </body>
-
 </html>
