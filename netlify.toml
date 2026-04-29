@@ -1,6 +1,5 @@
 [build]
   publish = "."
-  command = "bash build.sh"
 
 [[headers]]
   for = "/*"
