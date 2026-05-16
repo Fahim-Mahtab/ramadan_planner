@@ -15,6 +15,7 @@ import 'community_admin_panel_screen.dart';
 import 'community_calendar_screen.dart';
 import 'community_event_detail_screen.dart';
 import 'create_event_request_screen.dart';
+import '../widgets/community_qa_tab.dart';
 
 class CommunityScreen extends StatefulWidget {
   static const double maxContentWidth = 900;
@@ -34,7 +35,8 @@ class _CommunityScreenState extends State<CommunityScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final feedProvider = context.read<CommunityFeedProvider>();
       final notificationProvider = context.read<CommunityNotificationProvider>();
@@ -45,15 +47,16 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (!mounted) return;
       if (_isAdmin == admin) return;
       final previousController = _tabController;
-      final nextIndex = previousController.index.clamp(0, admin ? 2 : 1);
+      final nextIndex = previousController.index.clamp(0, admin ? 3 : 2);
       final nextController = TabController(
-        length: admin ? 3 : 2,
+        length: admin ? 4 : 3,
         vsync: this,
         initialIndex: nextIndex,
       );
       setState(() {
         _isAdmin = admin;
         _tabController = nextController;
+        _tabController.addListener(() => setState(() {}));
       });
       previousController.dispose();
     });
@@ -68,8 +71,6 @@ class _CommunityScreenState extends State<CommunityScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final width = MediaQuery.sizeOf(context).width;
-    final compact = width < 380;
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -164,34 +165,20 @@ class _CommunityScreenState extends State<CommunityScreen>
               tabs: [
                 Tab(text: AppLocale.format(AppLocale.communityFeed)),
                 Tab(text: AppLocale.format(AppLocale.communityCalendar)),
+                Tab(text: AppLocale.format(AppLocale.communityQA)),
                 if (_isAdmin) Tab(text: AppLocale.format(AppLocale.communityAdmin)),
               ],
             ),
           ),
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 70),
-        child: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CreateEventRequestScreen()),
-            );
-          },
-          backgroundColor: isDark ? AppColors.slate700 : AppColors.slate900,
-          foregroundColor: Colors.white,
-          icon: const Icon(Icons.add_rounded),
-          label: compact
-              ? const SizedBox.shrink()
-              : Text(AppLocale.format(AppLocale.communityRequestEvent)),
-        ),
-      ),
+      floatingActionButton: null,
       body: TabBarView(
         controller: _tabController,
         children: [
           const _CommunityFeedTab(),
           const CommunityCalendarScreen(),
+          const CommunityQATab(),
           if (_isAdmin) const CommunityAdminPanelScreen(),
         ],
       ),
@@ -303,6 +290,10 @@ class _CommunityFeedTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final width = MediaQuery.sizeOf(context).width;
+    final compact = width < 380;
+
     return Consumer<CommunityFeedProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading && provider.events.isEmpty) {
@@ -312,51 +303,72 @@ class _CommunityFeedTab extends StatelessWidget {
           return Center(child: Text(provider.error ?? ''));
         }
 
-        return RefreshIndicator(
-          onRefresh: provider.refresh,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final horizontalPadding = constraints.maxWidth >= 700 ? 24.0 : 16.0;
-              return Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: CommunityScreen.maxContentWidth),
-                  child: ListView(
-                    padding: EdgeInsets.fromLTRB(
-                      horizontalPadding,
-                      horizontalPadding,
-                      horizontalPadding,
-                      110,
-                    ),
-                    children: [
-                      if (provider.announcements.isNotEmpty) ...[
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 70),
+            child: FloatingActionButton.extended(
+              heroTag: 'feed_fab',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CreateEventRequestScreen()),
+                );
+              },
+              backgroundColor: isDark ? AppColors.slate700 : AppColors.slate900,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add_rounded),
+              label: compact
+                  ? const SizedBox.shrink()
+                  : Text(AppLocale.format(AppLocale.communityRequestEvent)),
+            ),
+          ),
+          body: RefreshIndicator(
+            onRefresh: provider.refresh,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final horizontalPadding = constraints.maxWidth >= 700 ? 24.0 : 16.0;
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: CommunityScreen.maxContentWidth),
+                    child: ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        horizontalPadding,
+                        horizontalPadding,
+                        110,
+                      ),
+                      children: [
+                        if (provider.announcements.isNotEmpty) ...[
+                          _SectionHeader(
+                            title: AppLocale.format(AppLocale.communityAnnouncements),
+                            icon: Icons.campaign_rounded,
+                          ),
+                          const SizedBox(height: 12),
+                          ...provider.announcements.map(
+                            (item) => _AnnouncementCard(announcement: item),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
                         _SectionHeader(
-                          title: AppLocale.format(AppLocale.communityAnnouncements),
-                          icon: Icons.campaign_rounded,
+                          title: AppLocale.format(AppLocale.communityEvents),
+                          icon: Icons.event_available_rounded,
                         ),
                         const SizedBox(height: 12),
-                        ...provider.announcements.map(
-                          (item) => _AnnouncementCard(announcement: item),
+                        ...provider.events.map(
+                          (event) => _EventFeedCard(event: event),
                         ),
-                        const SizedBox(height: 24),
+                        if (provider.isLoadingMore)
+                          const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
                       ],
-                      _SectionHeader(
-                        title: AppLocale.format(AppLocale.communityEvents),
-                        icon: Icons.event_available_rounded,
-                      ),
-                      const SizedBox(height: 12),
-                      ...provider.events.map(
-                        (event) => _EventFeedCard(event: event),
-                      ),
-                      if (provider.isLoadingMore)
-                        const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         );
       },

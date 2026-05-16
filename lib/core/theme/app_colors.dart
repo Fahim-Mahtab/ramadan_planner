@@ -11,7 +11,10 @@ class AppColors {
   static const Color backgroundDark = Color(0xFF102218);
 
   // Emerald Shades
+  static const Color emerald50 = Color(0xFFECFDF5);
+  static const Color emerald100 = Color(0xFFD1FAE5);
   static const Color emerald600 = Color(0xFF059669);
+  static const Color emerald700 = Color(0xFF047857);
   static const Color emerald800 = Color(0xFF065F46);
   static const Color emerald900 = Color(0xFF064E3B);
   static const Color emerald950 = Color(0xFF022C22);
@@ -19,6 +22,7 @@ class AppColors {
   // Slate Shades
   static const Color slate50 = Color(0xFFF8FAFC);
   static const Color slate100 = Color(0xFFF1F5F9);
+  static const Color slate200 = Color(0xFFE2E8F0);
   static const Color slate300 = Color(0xFFCBD5E1);
   static const Color slate400 = Color(0xFF94A3B8);
   static const Color slate500 = Color(0xFF64748B);

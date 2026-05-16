@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../providers/community_admin_provider.dart';
 import '../models/community_event_model.dart';
 import '../../../shared/widgets/custom_card.dart';
+import 'create_event_request_screen.dart';
 
 class CommunityAdminPanelScreen extends StatefulWidget {
   const CommunityAdminPanelScreen({super.key});
@@ -38,114 +39,136 @@ class _CommunityAdminPanelScreenState extends State<CommunityAdminPanelScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<CommunityAdminProvider>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final width = MediaQuery.sizeOf(context).width;
+    final compact = width < 380;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final horizontalPadding = constraints.maxWidth >= 700 ? 24.0 : 16.0;
-        return Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _maxContentWidth),
-            child: RefreshIndicator(
-              onRefresh: provider.fetchPendingRequests,
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPadding,
-                  horizontalPadding,
-                  horizontalPadding,
-                  110,
-                ),
-                children: [
-                  // --- Pending Requests Section ---
-                  Text(
-                    'Pending Event Requests',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : AppColors.slate900,
-                        ),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 70),
+        child: FloatingActionButton.extended(
+          heroTag: 'admin_fab',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CreateEventRequestScreen()),
+            );
+          },
+          backgroundColor: isDark ? AppColors.slate700 : AppColors.slate900,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add_rounded),
+          label: compact
+              ? const SizedBox.shrink()
+              : Text(AppLocale.format(AppLocale.communityRequestEvent)),
+        ),
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontalPadding = constraints.maxWidth >= 700 ? 24.0 : 16.0;
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+              child: RefreshIndicator(
+                onRefresh: provider.fetchPendingRequests,
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    horizontalPadding,
+                    horizontalPadding,
+                    110,
                   ),
-                  const SizedBox(height: 12),
-                  if (provider.pendingRequests.isEmpty && !provider.isLoading)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                        child: Text(
-                          'No pending requests at the moment.',
-                          style: TextStyle(color: AppColors.slate500),
+                  children: [
+                    // --- Pending Requests Section ---
+                    Text(
+                      'Pending Event Requests',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : AppColors.slate900,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (provider.pendingRequests.isEmpty && !provider.isLoading)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Center(
+                          child: Text(
+                            'No pending requests at the moment.',
+                            style: TextStyle(color: AppColors.slate500),
+                          ),
                         ),
                       ),
-                    ),
-                  ...provider.pendingRequests.map((request) => _PendingRequestCard(request: request)),
-                  
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 24),
+                    ...provider.pendingRequests.map((request) => _PendingRequestCard(request: request)),
+                    
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    const SizedBox(height: 24),
 
-                  // --- Announcements Section ---
-                  Text(
-                    AppLocale.format(AppLocale.communityAdminAnnouncements),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      labelText: AppLocale.format(AppLocale.communityAnnouncementTitle),
-                      filled: true,
-                      fillColor: isDark ? AppColors.slate800 : AppColors.slate50,
+                    // --- Announcements Section ---
+                    Text(
+                      AppLocale.format(AppLocale.communityAdminAnnouncements),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _messageController,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      labelText: AppLocale.format(AppLocale.communityAnnouncementMessage),
-                      filled: true,
-                      fillColor: isDark ? AppColors.slate800 : AppColors.slate50,
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        labelText: AppLocale.format(AppLocale.communityAnnouncementTitle),
+                        filled: true,
+                        fillColor: isDark ? AppColors.slate800 : AppColors.slate50,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: provider.isLoading
-                          ? null
-                          : () async {
-                              if (_titleController.text.trim().isEmpty) return;
-                              await context.read<CommunityAdminProvider>().createAnnouncement(
-                                    title: _titleController.text,
-                                    message: _messageController.text,
-                                  );
-                              if (!context.mounted) return;
-                              _titleController.clear();
-                              _messageController.clear();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    AppLocale.format(AppLocale.communityAnnouncementCreated),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _messageController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: AppLocale.format(AppLocale.communityAnnouncementMessage),
+                        filled: true,
+                        fillColor: isDark ? AppColors.slate800 : AppColors.slate50,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: provider.isLoading
+                            ? null
+                            : () async {
+                                if (_titleController.text.trim().isEmpty) return;
+                                await context.read<CommunityAdminProvider>().createAnnouncement(
+                                      title: _titleController.text,
+                                      message: _messageController.text,
+                                    );
+                                if (!context.mounted) return;
+                                _titleController.clear();
+                                _messageController.clear();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocale.format(AppLocale.communityAnnouncementCreated),
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.slate900,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                                );
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.slate900,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
+                        child: provider.isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : Text(AppLocale.format(AppLocale.communityCreateAnnouncement)),
                       ),
-                      child: provider.isLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : Text(AppLocale.format(AppLocale.communityCreateAnnouncement)),
                     ),
-                  ),
 
                   const SizedBox(height: 48),
                   const Divider(),
@@ -171,8 +194,9 @@ class _CommunityAdminPanelScreenState extends State<CommunityAdminPanelScreen> {
           ),
         );
       },
-    );
-  }
+    ),
+  );
+}
 }
 
 class _PendingRequestCard extends StatelessWidget {
@@ -182,7 +206,6 @@ class _PendingRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),

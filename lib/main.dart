@@ -19,6 +19,7 @@ import 'features/asmaul_husna/providers/asmaul_husna_provider.dart';
 import 'features/community/providers/community_admin_provider.dart';
 import 'features/community/providers/community_feed_provider.dart';
 import 'features/community/providers/community_notification_provider.dart';
+import 'features/community/providers/community_qa_provider.dart';
 import 'features/community/providers/event_detail_provider.dart';
 import 'features/community/providers/event_request_provider.dart';
 import 'shared/widgets/web_responsive_shell.dart';
@@ -77,6 +78,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => EventDetailProvider()),
         ChangeNotifierProvider(create: (_) => CommunityAdminProvider()),
         ChangeNotifierProvider(create: (_) => CommunityNotificationProvider()),
+        ChangeNotifierProvider(create: (_) => CommunityQAProvider()),
       ],
       child: MaterialApp(
         title: 'Ramadan Planner',

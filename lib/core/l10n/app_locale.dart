@@ -22,6 +22,7 @@ class AppLocale {
   static const communityTitle = 'communityTitle';
   static const communityFeed = 'communityFeed';
   static const communityCalendar = 'communityCalendar';
+  static const communityQA = 'communityQA';
   static const communityAdmin = 'communityAdmin';
   static const communityAnnouncements = 'communityAnnouncements';
   static const communityEvents = 'communityEvents';
@@ -222,6 +223,7 @@ class AppLocale {
     communityTitle: 'Mosque Community',
     communityFeed: 'Feed',
     communityCalendar: 'Calendar',
+    communityQA: 'Q&A',
     communityAdmin: 'Admin',
     communityAnnouncements: 'Announcements',
     communityEvents: 'Events',
@@ -423,6 +425,7 @@ class AppLocale {
     communityTitle: 'মসজিদ কমিউনিটি',
     communityFeed: 'ফিড',
     communityCalendar: 'ক্যালেন্ডার',
+    communityQA: 'প্রশ্ন ও উত্তর',
     communityAdmin: 'অ্যাডমিন',
     communityAnnouncements: 'ঘোষণা',
     communityEvents: 'ইভেন্ট',
