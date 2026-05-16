@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../models/surah_info_model.dart';
 import '../models/surah_detail_model.dart';
 import '../providers/quran_provider.dart';
@@ -43,7 +44,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                 children: [
                   const Icon(Icons.error_outline, size: 48, color: Colors.red),
                   const SizedBox(height: 16),
-                  const Text('Failed to load Surah details'),
+                  Text(AppLocale.format(AppLocale.quranFailedLoad)),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
@@ -53,7 +54,7 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
                             .loadSurahDetail(widget.surah.surahNo);
                       });
                     },
-                    child: const Text('Retry'),
+                    child: Text(AppLocale.format(AppLocale.quranRetry)),
                   ),
                 ],
               ),

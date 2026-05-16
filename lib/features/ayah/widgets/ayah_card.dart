@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/custom_card.dart';
 
 /// Ayah of the Day card widget
@@ -21,7 +21,7 @@ class AyahCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppConstants.ayahOfTheDay.toUpperCase(),
+                AppLocale.format(AppLocale.ayahTitle).toUpperCase(),
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -35,11 +35,11 @@ class AyahCard extends StatelessWidget {
                   color: AppColors.gold,
                   size: 20,
                 ),
-                onPressed: () {                  
+                onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Share functionality coming soon!'),
-                      duration: Duration(seconds: 2),
+                    SnackBar(
+                      content: Text(AppLocale.format(AppLocale.noticeShareComingSoon)),
+                      duration: const Duration(seconds: 2),
                     ),
                   );
                 },
@@ -51,7 +51,7 @@ class AyahCard extends StatelessWidget {
           const SizedBox(height: 16),
           // Arabic text
           Text(
-            'شَهْرُ رَمَضَانَ الَّذِي أُنزِلَ فِيهِ الْقُرْآنُ هُدًى لِّلنَّاسِ',
+            AppLocale.format(AppLocale.ayahText),
             textAlign: TextAlign.right,
             textDirection: TextDirection.rtl,
             style: AppTheme.arabicTextStyle(
@@ -63,7 +63,7 @@ class AyahCard extends StatelessWidget {
           const SizedBox(height: 16),
           // Translation
           Text(
-            '"রমজান মাসই হলো সেই মাস, যাতে নাযিল করা হয়েছে কুরআন, যা মানুষের জন্য হেদায়েত।"',
+            AppLocale.format(AppLocale.ayahTranslation),
             style: TextStyle(
               fontSize: 14,
               fontStyle: FontStyle.italic,
@@ -75,7 +75,7 @@ class AyahCard extends StatelessWidget {
           const SizedBox(height: 8),
           // Reference
           Text(
-            '— Surah Al-Baqarah 2:185',
+            AppLocale.format(AppLocale.ayahReference),
             style: TextStyle(
               fontSize: 12,
               color: isDark ? AppColors.slate500 : AppColors.slate400,

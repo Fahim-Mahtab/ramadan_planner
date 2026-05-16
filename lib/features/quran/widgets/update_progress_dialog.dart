@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../providers/quran_provider.dart';
 
 /// Dialog for updating Quran reading progress
@@ -40,9 +41,9 @@ class _UpdateProgressDialogState extends State<UpdateProgressDialog> {
       Navigator.of(context).pop();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Progress updated successfully!'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocale.format(AppLocale.quranUpdateSuccess)),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -51,7 +52,7 @@ class _UpdateProgressDialogState extends State<UpdateProgressDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Update Quran Progress'),
+      title: Text(AppLocale.format(AppLocale.quranUpdateTitle)),
       content: Form(
         key: _formKey,
         child: Column(
@@ -60,17 +61,17 @@ class _UpdateProgressDialogState extends State<UpdateProgressDialog> {
             TextFormField(
               controller: _juzController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Current Juz',
-                hintText: 'Enter Juz number (1-30)',
+              decoration: InputDecoration(
+                labelText: AppLocale.format(AppLocale.quranCurrentJuzLabel),
+                hintText: AppLocale.format(AppLocale.quranJuzHint),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter Juz number';
+                  return AppLocale.format(AppLocale.quranJuzRequired);
                 }
                 final juz = int.tryParse(value);
                 if (juz == null || juz < 1 || juz > 30) {
-                  return 'Juz must be between 1 and 30';
+                  return AppLocale.format(AppLocale.quranJuzInvalid);
                 }
                 return null;
               },
@@ -79,17 +80,17 @@ class _UpdateProgressDialogState extends State<UpdateProgressDialog> {
             TextFormField(
               controller: _pageController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Current Page',
-                hintText: 'Enter page number (1-604)',
+              decoration: InputDecoration(
+                labelText: AppLocale.format(AppLocale.quranCurrentPageLabel),
+                hintText: AppLocale.format(AppLocale.quranPageHint),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter page number';
+                  return AppLocale.format(AppLocale.quranPageRequired);
                 }
                 final page = int.tryParse(value);
                 if (page == null || page < 1 || page > 604) {
-                  return 'Page must be between 1 and 604';
+                  return AppLocale.format(AppLocale.quranPageInvalid);
                 }
                 return null;
               },
@@ -100,9 +101,11 @@ class _UpdateProgressDialogState extends State<UpdateProgressDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(AppLocale.format(AppLocale.settingsLogoutCancel)),
         ),
-        ElevatedButton(onPressed: _saveProgress, child: const Text('Save')),
+        ElevatedButton(
+            onPressed: _saveProgress,
+            child: Text(AppLocale.format(AppLocale.quranSave))),
       ],
     );
   }

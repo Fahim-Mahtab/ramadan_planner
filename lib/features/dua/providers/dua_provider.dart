@@ -67,7 +67,6 @@ class DuaProvider with ChangeNotifier {
     final current = _tasbihCounts[duaId] ?? 0;
     _tasbihCounts[duaId] = current + 1;
     notifyListeners();
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('tasbih_${duaId}_$_todayKey', current + 1);
   }

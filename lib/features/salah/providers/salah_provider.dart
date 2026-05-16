@@ -20,8 +20,6 @@ class SalahProvider with ChangeNotifier {
 
   int get totalCount => _prayers.length;
 
-  String get completionStatus => '$completedCount/$totalCount Done';
-
   String get _currentDateKey => DateFormat('yyyy_MM_dd').format(DateTime.now());
 
   Future<void> _initializePrayers() async {

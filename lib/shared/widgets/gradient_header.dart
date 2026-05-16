@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../core/l10n/app_locale.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/time_formatter.dart';
 import '../../features/salah/providers/prayer_times_provider.dart';
@@ -19,7 +21,10 @@ class GradientHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final formattedDate = DateFormat('EEEE, d MMMM yyyy').format(now);
+    final langCode =
+        FlutterLocalization.instance.currentLocale?.languageCode ?? 'bn';
+    final formattedDate =
+        DateFormat('EEEE, d MMMM yyyy', langCode).format(now);
 
     return Container(
       decoration: BoxDecoration(
@@ -36,7 +41,7 @@ class GradientHeader extends StatelessWidget {
       child: Stack(
         children: [
           // Decorative mosque icon
-          Positioned(
+          const Positioned(
             top: 0,
             right: 0,
             child: Opacity(
@@ -54,7 +59,7 @@ class GradientHeader extends StatelessWidget {
             left: -24,
             child: Transform.rotate(
               angle: -0.2,
-              child: Opacity(
+              child: const Opacity(
                 opacity: 0.1,
                 child: Icon(
                   Icons.bedtime_outlined,
@@ -69,7 +74,8 @@ class GradientHeader extends StatelessWidget {
             builder: (context, provider, child) {
               final data = provider.prayerTimes;
 
-              String topTitle = data?.hijriDate ?? 'Fetching Date...';
+              String topTitle = data?.hijriDate ??
+                  AppLocale.format(AppLocale.headerFetching);
               String iftarTime = "-- : --";
               String suhoorTime = "-- : --";
 
@@ -77,8 +83,8 @@ class GradientHeader extends StatelessWidget {
                 iftarTime = TimeFormatter.to12Hour(data.maghrib);
                 suhoorTime = TimeFormatter.to12Hour(data.fajr);
               } else if (provider.isLoading) {
-                iftarTime = "Loading";
-                suhoorTime = "Loading";
+                iftarTime = AppLocale.format(AppLocale.headerLoading);
+                suhoorTime = AppLocale.format(AppLocale.headerLoading);
               }
 
               return Padding(
@@ -121,14 +127,14 @@ class GradientHeader extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _CountdownCard(
-                            label: 'Iftar At',
+                            label: AppLocale.format(AppLocale.headerIftar),
                             value: iftarTime,
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: _CountdownCard(
-                            label: 'Suhoor Ends',
+                            label: AppLocale.format(AppLocale.headerSuhoor),
                             value: suhoorTime,
                           ),
                         ),

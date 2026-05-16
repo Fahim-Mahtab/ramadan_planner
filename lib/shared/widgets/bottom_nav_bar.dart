@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_locale.dart';
 import '../../core/theme/app_colors.dart';
 
 /// Bottom navigation bar with iOS-style blur effect
@@ -43,31 +44,31 @@ class BottomNavBar extends StatelessWidget {
                 children: [
                   _NavItem(
                     icon: Icons.home_rounded,
-                    label: 'Home',
+                    label: AppLocale.format(AppLocale.navHome),
                     isActive: currentIndex == 0,
                     onTap: () => onTap(0),
                   ),
                   _NavItem(
                     icon: Icons.menu_book_rounded,
-                    label: 'Quran',
+                    label: AppLocale.format(AppLocale.navQuran),
                     isActive: currentIndex == 1,
                     onTap: () => onTap(1),
                   ),
                   _NavItem(
                     icon: Icons.schedule_rounded,
-                    label: 'Times',
+                    label: AppLocale.format(AppLocale.navTimes),
                     isActive: currentIndex == 2,
                     onTap: () => onTap(2),
                   ),
                   _NavItem(
                     icon: Icons.volunteer_activism_rounded,
-                    label: 'Dua',
+                    label: AppLocale.format(AppLocale.navDua),
                     isActive: currentIndex == 3,
                     onTap: () => onTap(3),
                   ),
                   _NavItem(
-                    icon: Icons.settings_rounded,
-                    label: 'Settings',
+                    icon: Icons.mosque_rounded,
+                    label: AppLocale.format(AppLocale.navCommunity),
                     isActive: currentIndex == 4,
                     onTap: () => onTap(4),
                   ),

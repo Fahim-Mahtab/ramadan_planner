@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -73,8 +74,8 @@ class _AyahListTileState extends State<AyahListTile> {
             _isLoading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to play audio. Check internet connection.'),
+            SnackBar(
+              content: Text(AppLocale.format(AppLocale.quranAudioError)),
             ),
           );
         }

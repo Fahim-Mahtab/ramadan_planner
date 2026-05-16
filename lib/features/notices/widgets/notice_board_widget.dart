@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/notices_provider.dart';
 
@@ -34,16 +35,16 @@ class NoticeBoardWidget extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Live Notice Board',
+                  AppLocale.format(AppLocale.noticeBoardTitle),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
+                    color: Colors.white,
                   ),
                 ),
               ),
             ),
-          
             const SizedBox(height: 12),
             SizedBox(
               height: 160,
@@ -100,7 +101,7 @@ class NoticeBoardWidget extends StatelessWidget {
                                     Expanded(
                                       child: Text(
                                         notice.title,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black87,
@@ -121,7 +122,7 @@ class NoticeBoardWidget extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
-                                        'NEW',
+                                        AppLocale.format(AppLocale.noticeNew),
                                         style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,

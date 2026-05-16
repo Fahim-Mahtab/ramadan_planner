@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../models/checklist_item_model.dart';
 
 /// Provider for managing Sunnah checklist
@@ -33,6 +34,7 @@ class ChecklistProvider with ChangeNotifier {
               (e) => ChecklistItemModel(
                 title: e['title'] as String,
                 isCompleted: e['isCompleted'] as bool,
+                key: e['key'] as String?,
               ),
             )
             .toList();
@@ -48,23 +50,33 @@ class ChecklistProvider with ChangeNotifier {
   }
 
   List<ChecklistItemModel> _defaultItems() => [
-    ChecklistItemModel(
-      title: 'Give Sadaqah (Charity) today',
-      isCompleted: false,
-    ),
-    ChecklistItemModel(
-      title: 'Recite Surah Al-Mulk before bed',
-      isCompleted: false,
-    ),
-    ChecklistItemModel(title: 'Make Dua for the Ummah', isCompleted: false),
-  ];
+        ChecklistItemModel(
+          title: 'Give Sadaqah (Charity) today',
+          key: AppLocale.checklistSadaqah,
+          isCompleted: false,
+        ),
+        ChecklistItemModel(
+          title: 'Recite Surah Al-Mulk before bed',
+          key: AppLocale.checklistMulk,
+          isCompleted: false,
+        ),
+        ChecklistItemModel(
+          title: 'Make Dua for the Ummah',
+          key: AppLocale.checklistUmmah,
+          isCompleted: false,
+        ),
+      ];
 
   Future<void> _saveItems() async {
     final prefs = await SharedPreferences.getInstance();
     final dateKey = _currentDateKey;
     final encoded = json.encode(
       _items
-          .map((e) => {'title': e.title, 'isCompleted': e.isCompleted})
+          .map((e) => {
+                'title': e.title,
+                'key': e.key,
+                'isCompleted': e.isCompleted,
+              })
           .toList(),
     );
     await prefs.setString('checklist_$dateKey', encoded);

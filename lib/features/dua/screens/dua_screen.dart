@@ -1,11 +1,106 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/dua_model.dart';
 import '../providers/dua_provider.dart';
 import '../widgets/dua_detail_sheet.dart';
 
+// ── Time period for the selector ───────────────────────────────────────────────
+enum _Period { day, evening, night, all }
+
+// ── Mixed list item types ──────────────────────────────────────────────────────
+class _SectionTag {
+  final String label;
+  final Color color;
+  final IconData icon;
+  const _SectionTag(this.label, this.color, this.icon);
+}
+
+// ── Period meta-data ───────────────────────────────────────────────────────────
+extension _PeriodExt on _Period {
+  String label(BuildContext context) {
+    switch (this) {
+      case _Period.day:
+        return AppLocale.format(AppLocale.duaPeriodDay);
+      case _Period.evening:
+        return AppLocale.format(AppLocale.duaPeriodEvening);
+      case _Period.night:
+        return AppLocale.format(AppLocale.duaPeriodNight);
+      case _Period.all:
+        return AppLocale.format(AppLocale.duaPeriodAll);
+    }
+  }
+
+  String headerTitle(BuildContext context) {
+    switch (this) {
+      case _Period.day:
+        return AppLocale.format(AppLocale.duaHeaderDay);
+      case _Period.evening:
+        return AppLocale.format(AppLocale.duaHeaderEvening);
+      case _Period.night:
+        return AppLocale.format(AppLocale.duaHeaderNight);
+      case _Period.all:
+        return AppLocale.format(AppLocale.duaHeaderAll);
+    }
+  }
+
+  String headerSubtitle(BuildContext context) {
+    switch (this) {
+      case _Period.day:
+        return AppLocale.format(AppLocale.duaSubtitleDay);
+      case _Period.evening:
+        return AppLocale.format(AppLocale.duaSubtitleEvening);
+      case _Period.night:
+        return AppLocale.format(AppLocale.duaSubtitleNight);
+      case _Period.all:
+        return AppLocale.format(AppLocale.duaSubtitleAll);
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case _Period.day:
+        return Icons.wb_sunny_rounded;
+      case _Period.evening:
+        return Icons.wb_twilight_rounded;
+      case _Period.night:
+        return Icons.nights_stay_rounded;
+      case _Period.all:
+        return Icons.volunteer_activism_rounded;
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case _Period.day:
+        return const Color(0xFFF59E0B);
+      case _Period.evening:
+        return const Color(0xFF6366F1);
+      case _Period.night:
+        return const Color(0xFF3B4C8C);
+      case _Period.all:
+        return const Color(0xFF059669);
+    }
+  }
+
+  List<Color> get gradientColors {
+    switch (this) {
+      case _Period.day:
+        return [const Color(0xFFF59E0B), const Color(0xFFF97316)];
+      case _Period.evening:
+        return [const Color(0xFF6366F1), const Color(0xFF8B5CF6)];
+      case _Period.night:
+        return [const Color(0xFF1E3A5F), const Color(0xFF0A1628)];
+      case _Period.all:
+        return [const Color(0xFF059669), const Color(0xFF10B981)];
+    }
+  }
+}
+
+// ── Screen ─────────────────────────────────────────────────────────────────────
 class DuaScreen extends StatefulWidget {
   const DuaScreen({super.key});
 
@@ -14,7 +109,8 @@ class DuaScreen extends StatefulWidget {
 }
 
 class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
-  DuaCategory? _selectedCategory;
+  late _Period _period;
+  DuaCategory? _allTabCategory;
   bool _showFavoritesOnly = false;
   String _searchQuery = '';
   bool _isSearchVisible = false;
@@ -26,9 +122,10 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _period = _autoDetectPeriod();
     _listAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 700),
     )..forward();
   }
 
@@ -40,29 +137,132 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  List<DuaModel> _filteredDuas(DuaProvider provider) {
-    var list = allDuas.toList();
+  static _Period _autoDetectPeriod() {
+    final h = DateTime.now().hour;
+    if (h >= 5 && h < 17) return _Period.day;
+    if (h >= 17 && h < 21) return _Period.evening;
+    return _Period.night;
+  }
 
-    if (_showFavoritesOnly) {
-      list = list.where((d) => provider.isFavorite(d.id)).toList();
+  int _countFor(_Period p) {
+    switch (p) {
+      case _Period.day:
+        return allDuas
+            .where((d) =>
+                d.group == DuaCategory.morning ||
+                d.group == DuaCategory.daily)
+            .length;
+      case _Period.evening:
+        return allDuas.where((d) => d.group == DuaCategory.evening).length;
+      case _Period.night:
+        return allDuas.where((d) => d.group == DuaCategory.night).length;
+      case _Period.all:
+        return allDuas.length;
     }
+  }
 
-    if (_selectedCategory != null) {
-      list = list.where((d) => d.group == _selectedCategory).toList();
+  bool _matches(DuaModel d, String q, String langCode) =>
+      d.getName(langCode).toLowerCase().contains(q) ||
+      d.getTranslation(langCode).toLowerCase().contains(q) ||
+      d.reference.toLowerCase().contains(q) ||
+      d.arabic.contains(q);
+
+  List<dynamic> _buildItems(DuaProvider provider, String langCode) {
+    final q = _searchQuery.toLowerCase();
+
+    switch (_period) {
+      case _Period.day:
+        var morning = allDuas
+            .where((d) => d.group == DuaCategory.morning)
+            .toList();
+        var daily = allDuas
+            .where((d) => d.group == DuaCategory.daily)
+            .toList();
+        if (q.isNotEmpty) {
+          morning = morning.where((d) => _matches(d, q, langCode)).toList();
+          daily = daily.where((d) => _matches(d, q, langCode)).toList();
+          return [...morning, ...daily];
+        }
+        return [
+          _SectionTag(
+              AppLocale.format(AppLocale.duaSectionMorning),
+              DuaCategory.morning.accentColor,
+              DuaCategory.morning.categoryIcon),
+          ...morning,
+          _SectionTag(
+              AppLocale.format(AppLocale.duaSectionDaily),
+              DuaCategory.daily.accentColor,
+              DuaCategory.daily.categoryIcon),
+          ...daily,
+        ];
+
+      case _Period.evening:
+        var list =
+            allDuas.where((d) => d.group == DuaCategory.evening).toList();
+        if (q.isNotEmpty) list = list.where((d) => _matches(d, q, langCode)).toList();
+        return list;
+
+      case _Period.night:
+        var list =
+            allDuas.where((d) => d.group == DuaCategory.night).toList();
+        if (q.isNotEmpty) list = list.where((d) => _matches(d, q, langCode)).toList();
+        return list;
+
+      case _Period.all:
+        var list = allDuas.toList();
+        if (_showFavoritesOnly) {
+          list = list.where((d) => provider.isFavorite(d.id)).toList();
+        }
+        if (_allTabCategory != null) {
+          list = list.where((d) => d.group == _allTabCategory).toList();
+        }
+        if (q.isNotEmpty) {
+          list = list.where((d) => _matches(d, q, langCode)).toList();
+        }
+        // Group by category when unfiltered
+        if (_allTabCategory == null && !_showFavoritesOnly && q.isEmpty) {
+          return _buildGroupedList(list, langCode);
+        }
+        return list;
     }
+  }
 
-    if (_searchQuery.isNotEmpty) {
-      final q = _searchQuery.toLowerCase();
-      list = list
-          .where((d) =>
-              d.categoryBangla.toLowerCase().contains(q) ||
-              d.bangla.toLowerCase().contains(q) ||
-              d.reference.toLowerCase().contains(q) ||
-              d.arabic.contains(q))
-          .toList();
+  List<dynamic> _buildGroupedList(List<DuaModel> duas, String langCode) {
+    const order = [
+      DuaCategory.morning,
+      DuaCategory.evening,
+      DuaCategory.night,
+      DuaCategory.daily,
+      DuaCategory.ramadanSpecial,
+      DuaCategory.travel,
+      DuaCategory.forgiveness,
+    ];
+    final groups = <DuaCategory, List<DuaModel>>{};
+    for (final d in duas) {
+      groups.putIfAbsent(d.group, () => []).add(d);
     }
+    final result = <dynamic>[];
+    for (final cat in order) {
+      final catDuas = groups[cat];
+      if (catDuas != null && catDuas.isNotEmpty) {
+        result.add(_SectionTag(
+            cat.getLabel(langCode), cat.accentColor, cat.categoryIcon));
+        result.addAll(catDuas);
+      }
+    }
+    return result;
+  }
 
-    return list;
+  void _switchPeriod(_Period p) {
+    setState(() {
+      _period = p;
+      _allTabCategory = null;
+      _showFavoritesOnly = false;
+      _searchQuery = '';
+      _searchController.clear();
+      _isSearchVisible = false;
+    });
+    _resetListAnimation();
   }
 
   void _resetListAnimation() {
@@ -70,9 +270,12 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
     _listAnimController.forward();
   }
 
+  // ── Build ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final langCode = FlutterLocalization.instance.currentLocale?.languageCode ?? 'bn';
 
     return Consumer<DuaProvider>(
       builder: (context, provider, _) {
@@ -80,46 +283,20 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final filteredList = _filteredDuas(provider);
-        final showDuaOfDay = _selectedCategory == null &&
-            !_showFavoritesOnly &&
-            _searchQuery.isEmpty;
+        final items = _buildItems(provider, langCode);
 
         return SafeArea(
           bottom: false,
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _buildHeader(isDark, provider)),
-              if (_isSearchVisible)
-                SliverToBoxAdapter(child: _buildSearchBar(isDark)),
-              SliverToBoxAdapter(child: _buildCategoryChips(isDark)),
-              if (showDuaOfDay)
-                SliverToBoxAdapter(
-                    child: _buildDuaOfDay(isDark, provider)),
-              if (filteredList.isEmpty)
-                SliverFillRemaining(child: _buildEmptyState(isDark))
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final dua = filteredList[index];
-                        return _AnimatedDuaTile(
-                          key: ValueKey(dua.id),
-                          dua: dua,
-                          index: index,
-                          listAnimController: _listAnimController,
-                          isFavorite: provider.isFavorite(dua.id),
-                          onFavoriteToggle: () =>
-                              provider.toggleFavorite(dua.id),
-                          onTap: () => DuaDetailSheet.show(context, dua),
-                        );
-                      },
-                      childCount: filteredList.length,
-                    ),
-                  ),
-                ),
+          child: Column(
+            children: [
+              _buildHeader(isDark, provider, langCode),
+              if (_isSearchVisible) _buildSearchBar(isDark),
+              _buildPeriodSelector(isDark),
+              if (_period == _Period.all)
+                _buildAllTabExtras(isDark, provider, langCode),
+              Expanded(
+                child: _buildContent(isDark, provider, items, langCode),
+              ),
             ],
           ),
         );
@@ -127,28 +304,27 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHeader(bool isDark, DuaProvider provider) {
-    final favCount = provider.favorites.length;
+  // ── Header ─────────────────────────────────────────────────────────────────
 
-    return Container(
+  Widget _buildHeader(bool isDark, DuaProvider provider, String langCode) {
+    final gradientColors = isDark
+        ? [AppColors.emerald950, AppColors.backgroundDark]
+        : _period.gradientColors;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isDark
-              ? [
-                  AppColors.emerald950,
-                  AppColors.backgroundDark,
-                ]
-              : [
-                  const Color(0xFF059669),
-                  const Color(0xFF10B981),
-                ],
+          colors: gradientColors,
         ),
       ),
       child: Stack(
         children: [
+          // Decorative circles
           Positioned(
             right: -20,
             top: -10,
@@ -157,19 +333,31 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
+                color: Colors.white.withValues(alpha: 0.07),
               ),
             ),
           ),
           Positioned(
             right: 30,
-            bottom: -20,
+            bottom: -15,
             child: Container(
-              width: 60,
-              height: 60,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -15,
+            bottom: 5,
+            child: Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.04),
               ),
             ),
           ),
@@ -185,8 +373,8 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                       shape: BoxShape.circle,
                       color: Colors.white.withValues(alpha: 0.2),
                     ),
-                    child: const Icon(
-                      Icons.volunteer_activism_rounded,
+                    child: Icon(
+                      _period.icon,
                       color: Colors.white,
                       size: 26,
                     ),
@@ -196,26 +384,38 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'দোয়া সমূহ',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: Text(
+                            _period.headerTitle(context),
+                            key: ValueKey(_period),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          '${allDuas.length}টি দোয়া • ${favCount > 0 ? '$favCountটি প্রিয়' : 'প্রিয় দোয়া যোগ করুন'}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.8),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: Text(
+                            _period.headerSubtitle(context),
+                            key: ValueKey('sub_$_period'),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  GestureDetector(
+                  // Search button
+                  _HeaderIconBtn(
+                    icon: _isSearchVisible
+                        ? Icons.close_rounded
+                        : Icons.search_rounded,
                     onTap: () {
                       setState(() {
                         _isSearchVisible = !_isSearchVisible;
@@ -224,27 +424,30 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                           _searchController.clear();
                           _resetListAnimation();
                         } else {
-                          Future.delayed(const Duration(milliseconds: 100),
-                              () => _searchFocus.requestFocus());
+                          Future.delayed(
+                            const Duration(milliseconds: 100),
+                            () => _searchFocus.requestFocus(),
+                          );
                         }
                       });
                     },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
-                      child: Icon(
-                        _isSearchVisible
-                            ? Icons.close_rounded
-                            : Icons.search_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
                   ),
+                  const SizedBox(width: 8),
+                  // Favorites toggle (only in All tab)
+                  if (_period == _Period.all)
+                    _HeaderIconBtn(
+                      icon: _showFavoritesOnly
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: _showFavoritesOnly ? AppColors.error : null,
+                      onTap: () {
+                        setState(() {
+                          _showFavoritesOnly = !_showFavoritesOnly;
+                          if (_showFavoritesOnly) _allTabCategory = null;
+                        });
+                        _resetListAnimation();
+                      },
+                    ),
                 ],
               ),
             ],
@@ -254,12 +457,14 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ── Search bar ─────────────────────────────────────────────────────────────
+
   Widget _buildSearchBar(bool isDark) {
     return AnimatedSize(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
         decoration: BoxDecoration(
           color: isDark ? AppColors.slate800 : Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -284,7 +489,7 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
             color: isDark ? Colors.white : AppColors.slate800,
           ),
           decoration: InputDecoration(
-            hintText: 'দোয়া খুঁজুন...',
+            hintText: AppLocale.format(AppLocale.duaSearchHint),
             hintStyle: TextStyle(
               color: isDark ? AppColors.slate500 : AppColors.slate400,
             ),
@@ -301,118 +506,69 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCategoryChips(bool isDark) {
-    final categories = [
-      (null, 'সকল', Icons.apps_rounded),
-      ...DuaCategory.values.map(
-          (c) => (c as DuaCategory?, c.banglaLabel, c.categoryIcon)),
-    ];
+  // ── Period selector ────────────────────────────────────────────────────────
 
-    return SizedBox(
-      height: 56,
+  Widget _buildPeriodSelector(bool isDark) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+      height: 82,
+      child: Row(
+        children: [
+          for (final p in _Period.values) ...[
+            if (p != _Period.values.first) const SizedBox(width: 8),
+            Expanded(
+              child: _PeriodCard(
+                period: p,
+                isSelected: _period == p,
+                isDark: isDark,
+                count: _countFor(p),
+                onTap: () => _switchPeriod(p),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── All-tab extras (category chips) ──────────────────────────────────────
+
+  Widget _buildAllTabExtras(bool isDark, DuaProvider provider, String langCode) {
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      height: 40,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemCount: categories.length + 1,
+        itemCount: DuaCategory.values.length,
         itemBuilder: (context, index) {
-          if (index == 1) {
-            final isSelected = _showFavoritesOnly;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showFavoritesOnly = !_showFavoritesOnly;
-                  if (_showFavoritesOnly) _selectedCategory = null;
-                });
-                _resetListAnimation();
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.error
-                      : isDark
-                          ? AppColors.slate800
-                          : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.error
-                        : isDark
-                            ? AppColors.slate700
-                            : AppColors.slate300,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.error.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.favorite_rounded,
-                      size: 14,
-                      color: isSelected
-                          ? Colors.white
-                          : isDark
-                              ? AppColors.slate400
-                              : AppColors.slate500,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'প্রিয়',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected
-                            ? Colors.white
-                            : isDark
-                                ? AppColors.slate300
-                                : AppColors.slate600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          final catIndex = index > 1 ? index - 1 : index;
-          final (cat, label, icon) = categories[catIndex];
+          final cat = DuaCategory.values[index];
           final isSelected =
-              !_showFavoritesOnly && _selectedCategory == cat;
+              _allTabCategory == cat && !_showFavoritesOnly;
 
           return GestureDetector(
             onTap: () {
               setState(() {
-                _selectedCategory = cat;
+                _allTabCategory = isSelected ? null : cat;
                 _showFavoritesOnly = false;
               });
               _resetListAnimation();
             },
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 200),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? (cat?.accentColor ?? AppColors.primary)
+                    ? cat.accentColor
                     : isDark
                         ? AppColors.slate800
                         : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
-                      ? (cat?.accentColor ?? AppColors.primary)
+                      ? cat.accentColor
                       : isDark
                           ? AppColors.slate700
                           : AppColors.slate300,
@@ -420,9 +576,8 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: (cat?.accentColor ?? AppColors.primary)
-                              .withValues(alpha: 0.3),
-                          blurRadius: 8,
+                          color: cat.accentColor.withValues(alpha: 0.3),
+                          blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                       ]
@@ -432,8 +587,8 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    icon,
-                    size: 14,
+                    cat.categoryIcon,
+                    size: 13,
                     color: isSelected
                         ? Colors.white
                         : isDark
@@ -442,11 +597,10 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    label,
+                    cat.getLabel(langCode),
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                       color: isSelected
                           ? Colors.white
                           : isDark
@@ -463,13 +617,66 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDuaOfDay(bool isDark, DuaProvider provider) {
+  // ── Content ────────────────────────────────────────────────────────────────
+
+  Widget _buildContent(
+      bool isDark, DuaProvider provider, List<dynamic> items, String langCode) {
+    if (items.isEmpty) return _buildEmptyState(isDark);
+
+    return CustomScrollView(
+      slivers: [
+        // Dua of the Day card — only in All tab with no filter
+        if (_period == _Period.all &&
+            _allTabCategory == null &&
+            !_showFavoritesOnly &&
+            _searchQuery.isEmpty)
+          SliverToBoxAdapter(
+            child: _buildDuaOfDay(isDark, provider, langCode),
+          ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final item = items[index];
+                if (item is _SectionTag) {
+                  return _buildSectionHeader(item, isDark);
+                }
+                final dua = item as DuaModel;
+                final animIndex = items
+                        .sublist(0, index + 1)
+                        .whereType<DuaModel>()
+                        .length -
+                    1;
+                return _AnimatedDuaTile(
+                  key: ValueKey(dua.id),
+                  dua: dua,
+                  langCode: langCode,
+                  index: animIndex,
+                  listAnimController: _listAnimController,
+                  isFavorite: provider.isFavorite(dua.id),
+                  onFavoriteToggle: () =>
+                      provider.toggleFavorite(dua.id),
+                  onTap: () => DuaDetailSheet.show(context, dua),
+                );
+              },
+              childCount: items.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Dua of the day ─────────────────────────────────────────────────────────
+
+  Widget _buildDuaOfDay(bool isDark, DuaProvider provider, String langCode) {
     final dua = provider.duaOfTheDay;
 
     return GestureDetector(
       onTap: () => DuaDetailSheet.show(context, dua),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+        margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -487,7 +694,7 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
           ),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: AppColors.gold.withValues(alpha: isDark ? 0.3 : 0.2),
+            color: AppColors.gold.withValues(alpha: isDark ? 0.3 : 0.25),
           ),
         ),
         child: Column(
@@ -496,8 +703,8 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
             Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.gold.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -509,7 +716,7 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                           size: 13, color: AppColors.gold),
                       const SizedBox(width: 4),
                       Text(
-                        'আজকের দোয়া',
+                        AppLocale.format(AppLocale.duaOfTheDay),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -522,7 +729,7 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
                 const Spacer(),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  size: 14,
+                  size: 13,
                   color: AppColors.gold.withValues(alpha: 0.6),
                 ),
               ],
@@ -536,12 +743,14 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
               overflow: TextOverflow.ellipsis,
               style: AppTheme.arabicTextStyle(
                 fontSize: 20,
-                color: isDark ? const Color(0xFFD1FAE5) : AppColors.emerald900,
+                color: isDark
+                    ? const Color(0xFFD1FAE5)
+                    : AppColors.emerald900,
               ).copyWith(height: 1.7),
             ),
             const SizedBox(height: 10),
             Text(
-              dua.categoryBangla,
+              dua.getName(langCode),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -562,48 +771,229 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildEmptyState(bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+  // ── Section header ─────────────────────────────────────────────────────────
+
+  Widget _buildSectionHeader(_SectionTag tag, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
+      child: Row(
         children: [
-          Icon(
-            _showFavoritesOnly
-                ? Icons.favorite_border_rounded
-                : Icons.search_off_rounded,
-            size: 56,
-            color: isDark ? AppColors.slate600 : AppColors.slate400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _showFavoritesOnly
-                ? 'কোনো প্রিয় দোয়া নেই'
-                : 'কোনো দোয়া পাওয়া যায়নি',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.slate400 : AppColors.slate500,
+          Container(
+            width: 3,
+            height: 18,
+            decoration: BoxDecoration(
+              color: tag.color,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(width: 10),
+          Icon(tag.icon, size: 15, color: tag.color),
+          const SizedBox(width: 6),
           Text(
-            _showFavoritesOnly
-                ? 'হৃদয় আইকনে ট্যাপ করে প্রিয় দোয়া যোগ করুন'
-                : 'অন্য কিছু দিয়ে খোঁজার চেষ্টা করুন',
+            tag.label,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppColors.slate500 : AppColors.slate400,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
+              color: isDark ? AppColors.slate300 : AppColors.slate600,
             ),
           ),
-          const SizedBox(height: 80),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Divider(
+              color: tag.color.withValues(alpha: 0.25),
+              thickness: 1,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  // ── Empty state ────────────────────────────────────────────────────────────
+
+  Widget _buildEmptyState(bool isDark) {
+    final isFavEmpty = _showFavoritesOnly;
+    final isSearchEmpty = _searchQuery.isNotEmpty;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isFavEmpty
+                  ? Icons.favorite_border_rounded
+                  : Icons.search_off_rounded,
+              size: 56,
+              color: isDark ? AppColors.slate600 : AppColors.slate400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isFavEmpty
+                  ? AppLocale.format(AppLocale.duaNoFavorites)
+                  : isSearchEmpty
+                      ? AppLocale.format(AppLocale.duaNoResults)
+                      : AppLocale.format(AppLocale.duaEmptyPeriod),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.slate400 : AppColors.slate500,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              isFavEmpty
+                  ? AppLocale.format(AppLocale.duaNoFavoritesHint)
+                  : AppLocale.format(AppLocale.duaNoResultsHint),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.slate500 : AppColors.slate400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+// ── Period card ────────────────────────────────────────────────────────────────
+
+class _PeriodCard extends StatelessWidget {
+  final _Period period;
+  final bool isSelected;
+  final bool isDark;
+  final int count;
+  final VoidCallback onTap;
+
+  const _PeriodCard({
+    required this.period,
+    required this.isSelected,
+    required this.isDark,
+    required this.count,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = period.color;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: period.gradientColors,
+                )
+              : null,
+          color: isSelected
+              ? null
+              : isDark
+                  ? AppColors.slate800
+                  : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : isDark
+                    ? AppColors.slate700
+                    : AppColors.slate300,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [
+                  if (!isDark)
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              period.icon,
+              size: 22,
+              color: isSelected ? Colors.white : color,
+            ),
+            const SizedBox(height: 5),
+            Text(
+              period.label(context),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isSelected
+                    ? Colors.white
+                    : isDark
+                        ? AppColors.slate300
+                        : AppColors.slate700,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '$count${AppLocale.format(AppLocale.duaCountSuffix)}',
+              style: TextStyle(
+                fontSize: 10,
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.8)
+                    : isDark
+                        ? AppColors.slate500
+                        : AppColors.slate400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Header icon button ─────────────────────────────────────────────────────────
+
+class _HeaderIconBtn extends StatelessWidget {
+  final IconData icon;
+  final Color? color;
+  final VoidCallback onTap;
+
+  const _HeaderIconBtn({required this.icon, required this.onTap, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: 0.2),
+        ),
+        child: Icon(icon, color: color ?? Colors.white, size: 20),
+      ),
+    );
+  }
+}
+
+// ── Animated dua tile ──────────────────────────────────────────────────────────
+
 class _AnimatedDuaTile extends StatelessWidget {
   final DuaModel dua;
+  final String langCode;
   final int index;
   final AnimationController listAnimController;
   final bool isFavorite;
@@ -613,6 +1003,7 @@ class _AnimatedDuaTile extends StatelessWidget {
   const _AnimatedDuaTile({
     super.key,
     required this.dua,
+    required this.langCode,
     required this.index,
     required this.listAnimController,
     required this.isFavorite,
@@ -641,6 +1032,7 @@ class _AnimatedDuaTile extends StatelessWidget {
       ),
       child: _DuaTileContent(
         dua: dua,
+        langCode: langCode,
         isFavorite: isFavorite,
         onFavoriteToggle: onFavoriteToggle,
         onTap: onTap,
@@ -649,14 +1041,18 @@ class _AnimatedDuaTile extends StatelessWidget {
   }
 }
 
+// ── Dua tile content ───────────────────────────────────────────────────────────
+
 class _DuaTileContent extends StatelessWidget {
   final DuaModel dua;
+  final String langCode;
   final bool isFavorite;
   final VoidCallback onFavoriteToggle;
   final VoidCallback onTap;
 
   const _DuaTileContent({
     required this.dua,
+    required this.langCode,
     required this.isFavorite,
     required this.onFavoriteToggle,
     required this.onTap,
@@ -693,6 +1089,7 @@ class _DuaTileContent extends StatelessWidget {
         child: IntrinsicHeight(
           child: Row(
             children: [
+              // Left accent bar
               Container(
                 width: 4,
                 decoration: BoxDecoration(
@@ -704,6 +1101,7 @@ class _DuaTileContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
+              // Category icon
               Container(
                 width: 42,
                 height: 42,
@@ -715,6 +1113,7 @@ class _DuaTileContent extends StatelessWidget {
                 child: Icon(dua.icon, color: accentColor, size: 20),
               ),
               const SizedBox(width: 12),
+              // Main content
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -722,11 +1121,12 @@ class _DuaTileContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        dua.categoryBangla,
+                        dua.getName(langCode),
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : AppColors.slate800,
+                          color:
+                              isDark ? Colors.white : AppColors.slate800,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -737,8 +1137,9 @@ class _DuaTileContent extends StatelessWidget {
                         textDirection: TextDirection.rtl,
                         style: AppTheme.arabicTextStyle(
                           fontSize: 14,
-                          color:
-                              isDark ? AppColors.slate400 : AppColors.slate500,
+                          color: isDark
+                              ? AppColors.slate400
+                              : AppColors.slate500,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -752,7 +1153,7 @@ class _DuaTileContent extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              dua.group.banglaLabel,
+                              dua.group.getLabel(langCode),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -761,11 +1162,13 @@ class _DuaTileContent extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Icon(Icons.menu_book_rounded,
-                              size: 11,
-                              color: isDark
-                                  ? AppColors.slate500
-                                  : AppColors.slate400),
+                          Icon(
+                            Icons.menu_book_rounded,
+                            size: 11,
+                            color: isDark
+                                ? AppColors.slate500
+                                : AppColors.slate400,
+                          ),
                           const SizedBox(width: 3),
                           Flexible(
                             child: Text(
@@ -790,36 +1193,30 @@ class _DuaTileContent extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 4),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: onFavoriteToggle,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        transitionBuilder: (child, animation) =>
-                            ScaleTransition(scale: animation, child: child),
-                        child: Icon(
-                          isFavorite
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          key: ValueKey(isFavorite),
-                          size: 20,
-                          color: isFavorite
-                              ? AppColors.error
-                              : isDark
-                                  ? AppColors.slate500
-                                  : AppColors.slate400,
-                        ),
-                      ),
+              // Favorite button
+              GestureDetector(
+                onTap: onFavoriteToggle,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                    child: Icon(
+                      isFavorite
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      key: ValueKey(isFavorite),
+                      size: 20,
+                      color: isFavorite
+                          ? AppColors.error
+                          : isDark
+                              ? AppColors.slate500
+                              : AppColors.slate400,
                     ),
                   ),
-                ],
+                ),
               ),
-              const SizedBox(width: 8),
             ],
           ),
         ),

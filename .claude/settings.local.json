@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(cp admin_dashboard/index.html index.html)",
+      "Bash(git rm *)",
+      "Bash(rm -f admin_dashboard/index.html)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze:*)",
+      "Bash(dart pub deps:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

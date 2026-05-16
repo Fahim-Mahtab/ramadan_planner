@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../providers/quran_provider.dart';
 import '../widgets/surah_list_tile.dart';
 
@@ -22,7 +23,9 @@ class _QuranScreenState extends State<QuranScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quran'), centerTitle: true),
+      appBar: AppBar(
+          title: Text(AppLocale.format(AppLocale.navQuran)),
+          centerTitle: true),
       body: Consumer<QuranProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingSurahs && provider.surahs.isEmpty) {
@@ -40,7 +43,7 @@ class _QuranScreenState extends State<QuranScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => provider.loadSurahs(),
-                    child: const Text('Retry'),
+                    child: Text(AppLocale.format(AppLocale.quranRetry)),
                   ),
                 ],
               ),
@@ -48,7 +51,7 @@ class _QuranScreenState extends State<QuranScreen> {
           }
 
           if (provider.surahs.isEmpty) {
-            return const Center(child: Text('No Surahs found'));
+            return Center(child: Text(AppLocale.format(AppLocale.quranNoSurahs)));
           }
 
           return ListView.separated(

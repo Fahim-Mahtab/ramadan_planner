@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/custom_card.dart';
 import '../providers/checklist_provider.dart';
 
@@ -27,7 +27,7 @@ class ChecklistWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppConstants.sunnahChecklist,
+                AppLocale.format(AppLocale.checklistTitle),
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -35,12 +35,16 @@ class ChecklistWidget extends StatelessWidget {
               const SizedBox(height: 16),
               ...List.generate(checklistProvider.items.length, (index) {
                 final item = checklistProvider.items[index];
+                final displayTitle = item.key != null
+                    ? AppLocale.format(item.key!)
+                    : item.title;
+
                 return Padding(
                   padding: EdgeInsets.only(
                     bottom: index < checklistProvider.items.length - 1 ? 16 : 0,
                   ),
                   child: _ChecklistItem(
-                    title: item.title,
+                    title: displayTitle,
                     isCompleted: item.isCompleted,
                     onTap: () => checklistProvider.toggleItem(index),
                   ),

@@ -5,15 +5,19 @@ import '../../core/theme/app_colors.dart';
 class CustomCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final Color? borderColor;
   final double? borderWidth;
+  final double? borderRadius;
 
   const CustomCard({
     super.key,
     required this.child,
     this.padding,
+    this.margin,
     this.borderColor,
     this.borderWidth,
+    this.borderRadius,
   });
 
   @override
@@ -22,11 +26,12 @@ class CustomCard extends StatelessWidget {
 
     return Container(
       padding: padding ?? const EdgeInsets.all(20),
+      margin: margin,
       decoration: BoxDecoration(
         color: isDark
             ? AppColors.slate900.withValues(alpha: 0.5)
             : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(borderRadius ?? 12),
         border: Border.all(
           color:
               borderColor ??

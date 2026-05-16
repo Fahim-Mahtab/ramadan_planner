@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/time_formatter.dart';
 import '../providers/prayer_times_provider.dart';
@@ -30,17 +31,19 @@ class _TimeScreenState extends State<TimeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Prayer Times'), centerTitle: true),
+      appBar: AppBar(
+          title: Text(AppLocale.format(AppLocale.timePrayerTimes)),
+          centerTitle: true),
       body: Consumer<PrayerTimesProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text("Fetching location and timings..."),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(AppLocale.format(AppLocale.timeFetching)),
                 ],
               ),
             );
@@ -71,7 +74,7 @@ class _TimeScreenState extends State<TimeScreen> {
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('Retry Location'),
+                      child: Text(AppLocale.format(AppLocale.timeRetry)),
                     ),
                   ],
                 ),
@@ -81,7 +84,7 @@ class _TimeScreenState extends State<TimeScreen> {
 
           final data = provider.prayerTimes;
           if (data == null) {
-            return const Center(child: Text("No timing data available."));
+            return Center(child: Text(AppLocale.format(AppLocale.timeNoData)));
           }
 
           return RefreshIndicator(
@@ -153,94 +156,58 @@ class _TimeScreenState extends State<TimeScreen> {
                 const PrayerClockWidget(),
                 const SizedBox(height: 24),
 
-                // Iftar Highlight
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 20,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.gold.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.gold.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.wb_sunny_rounded, color: AppColors.gold),
-                          SizedBox(width: 12),
-                          Text(
-                            "Iftar Time\n(Maghrib)",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.gold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        TimeFormatter.to12Hour(data.maghrib),
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.gold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
 
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    "Prayer Times Table",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    AppLocale.format(AppLocale.timeTableTitle),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 12),
 
                 // Timetable
                 _buildTimeTile(
-                  "Fajr",
+                  AppLocale.format(AppLocale.timeFajr),
                   TimeFormatter.to12Hour(data.fajr),
                   Icons.nights_stay,
                   isDark,
                 ),
                 _buildTimeTile(
-                  "Sunrise",
+                  AppLocale.format(AppLocale.timeSunrise),
                   TimeFormatter.to12Hour(data.sunrise),
                   Icons.wb_twilight,
                   isDark,
                 ),
                 _buildTimeTile(
-                  "Dhuhr",
+                  AppLocale.format(AppLocale.timeDhuhr),
                   TimeFormatter.to12Hour(data.dhuhr),
                   Icons.wb_sunny,
                   isDark,
                 ),
                 _buildTimeTile(
-                  "Asr",
+                  AppLocale.format(AppLocale.timeAsr),
                   TimeFormatter.to12Hour(data.asr),
                   Icons.wb_cloudy,
                   isDark,
                 ),
                 _buildTimeTile(
-                  "Maghrib",
+                  AppLocale.format(AppLocale.timeMaghrib),
                   TimeFormatter.to12Hour(data.maghrib),
                   Icons.brightness_3,
                   isDark,
-                  isHighlight: true,
                 ),
                 _buildTimeTile(
-                  "Isha",
+                  AppLocale.format(AppLocale.timeIsha),
                   TimeFormatter.to12Hour(data.isha),
                   Icons.star,
+                  isDark,
+                ),
+                _buildTimeTile(
+                  'Jummah',
+                  TimeFormatter.to12Hour(data.jummah),
+                  Icons.groups_outlined,
                   isDark,
                 ),
               ],

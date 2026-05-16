@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/app_constants.dart';
 import '../providers/dua_provider.dart';
 import 'dua_detail_sheet.dart';
 
@@ -12,6 +13,8 @@ class DuaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final langCode =
+        FlutterLocalization.instance.currentLocale?.languageCode ?? 'bn';
 
     return Consumer<DuaProvider>(
       builder: (context, provider, _) {
@@ -49,7 +52,7 @@ class DuaCard extends StatelessWidget {
                         color: AppColors.gold, size: 18),
                     const SizedBox(width: 8),
                     Text(
-                      AppConstants.duaOfTheDay.toUpperCase(),
+                      AppLocale.format(AppLocale.duaCardTitle).toUpperCase(),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -84,11 +87,12 @@ class DuaCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  dua.bangla,
+                  dua.getPronounciation(langCode),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
+                    fontWeight: FontWeight.w500,
                     color: isDark
                         ? const Color(0xFF6EE7B7)
                         : const Color(0xFF047857),

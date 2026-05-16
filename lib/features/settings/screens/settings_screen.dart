@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notices/screens/admin_notices_screen.dart';
@@ -23,21 +25,30 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Settings',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A2E),
-                ),
-              ),
-              const SizedBox(height: 28),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1A1A2E)),
+        ),
+        title: Text(
+          AppLocale.format(AppLocale.settingsTitle),
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A2E),
+            letterSpacing: -0.5,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 12),
 
               // ── Profile card ────────────────────────────────────────────
               Container(
@@ -108,12 +119,18 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
+              // ── Language section ────────────────────────────────────────
+              _sectionLabel(AppLocale.format(AppLocale.settingsLanguage)),
+              const SizedBox(height: 10),
+              _buildLanguageSwitcher(context),
+              const SizedBox(height: 32),
+
               // ── Account section ─────────────────────────────────────────
-              _sectionLabel('Account'),
+              _sectionLabel(AppLocale.format(AppLocale.settingsAccount)),
               const SizedBox(height: 10),
               _SettingsTile(
                 icon: Icons.email_outlined,
-                label: 'Email',
+                label: AppLocale.format(AppLocale.settingsEmail),
                 trailing: Text(
                   email,
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
@@ -123,25 +140,27 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               // ── Admin Tools ─────────────────────────────────────────────
-              _sectionLabel('Admin Tools'),
+              _sectionLabel(AppLocale.format(AppLocale.settingsAdmin)),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AdminNoticesScreen()),
+                    MaterialPageRoute(
+                        builder: (_) => const AdminNoticesScreen()),
                   );
                 },
                 child: _SettingsTile(
                   icon: Icons.campaign_rounded,
-                  label: 'App Publisher (Notices)',
-                  trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+                  label: AppLocale.format(AppLocale.settingsAdminNotices),
+                  trailing: Icon(Icons.chevron_right_rounded,
+                      color: Colors.grey.shade400),
                 ),
               ),
               const SizedBox(height: 32),
 
               // ── Session ─────────────────────────────────────────────────
-              _sectionLabel('Session'),
+              _sectionLabel(AppLocale.format(AppLocale.settingsSession)),
               const SizedBox(height: 10),
               Consumer<AuthProvider>(
                 builder: (context, auth, _) => _LogoutTile(auth: auth),
@@ -151,6 +170,70 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ),
+      );
+  }
+
+  Widget _buildLanguageSwitcher(BuildContext context) {
+    final localization = FlutterLocalization.instance;
+    final currentLang = localization.currentLocale?.languageCode ?? 'bn';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.language_rounded,
+                size: 18, color: AppColors.primary),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Text(
+              'App Language / অ্যাপের ভাষা',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1A1A2E),
+              ),
+            ),
+          ),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'bn', label: Text('বাংলা')),
+              ButtonSegment(value: 'en', label: Text('English')),
+            ],
+            selected: {currentLang},
+            onSelectionChanged: (Set<String> selection) {
+              localization.translate(selection.first);
+            },
+            showSelectedIcon: false,
+            style: SegmentedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              visualDensity: VisualDensity.compact,
+              selectedBackgroundColor: AppColors.primary,
+              selectedForegroundColor: Colors.white,
+              side: BorderSide(color: Colors.grey.shade200),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -235,12 +318,12 @@ class _LogoutTile extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Log out?'),
-        content: const Text('You will need to sign in again to use the app.'),
+        title: Text(AppLocale.format(AppLocale.settingsLogoutTitle)),
+        content: Text(AppLocale.format(AppLocale.settingsLogoutMessage)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocale.format(AppLocale.settingsLogoutCancel)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -251,7 +334,7 @@ class _LogoutTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Log out'),
+            child: Text(AppLocale.format(AppLocale.settingsLogoutConfirm)),
           ),
         ],
       ),
@@ -259,7 +342,10 @@ class _LogoutTile extends StatelessWidget {
 
     if (confirmed == true && context.mounted) {
       await context.read<AuthProvider>().signOut();
-      // AuthGate's StreamBuilder sees session==null → shows LoginScreen.
+      if (context.mounted) {
+        // Pop all screens to return to AuthGate which will show LoginScreen
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     }
   }
 
@@ -297,7 +383,7 @@ class _LogoutTile extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                'Log out',
+                AppLocale.format(AppLocale.settingsLogout),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,

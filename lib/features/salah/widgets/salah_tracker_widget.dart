@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/custom_card.dart';
 import '../providers/salah_provider.dart';
 import '../providers/prayer_times_provider.dart';
@@ -85,10 +85,10 @@ class SalahTrackerWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    AppConstants.dailySalah,
+                    AppLocale.format(AppLocale.salahTitle),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -100,7 +100,7 @@ class SalahTrackerWidget extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      salahProvider.completionStatus,
+                      '${salahProvider.completedCount}/${salahProvider.totalCount} ${ AppLocale.format(AppLocale.salahDone)}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -112,12 +112,12 @@ class SalahTrackerWidget extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               if (visiblePrayers.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
                   child: Center(
                     child: Text(
-                      "Waiting for Fajr time to begin...",
-                      style: TextStyle(
+                     AppLocale.format(AppLocale.salahWaiting),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w500,
                         color: Colors.grey,
                       ),
@@ -141,8 +141,23 @@ class SalahTrackerWidget extends StatelessWidget {
                     final originalIndex = item['index'] as int;
                     final prayer = item['prayer'] as SalahModel;
 
+                    String displayName = prayer.name;
+                    // Localize prayer name
+                    switch (prayer.name) {
+                      case 'Fajr':
+                        displayName = AppLocale.format(AppLocale.timeFajr);
+                      case 'Dhuhr':
+                        displayName = AppLocale.format(AppLocale.timeDhuhr);
+                      case 'Asr':
+                        displayName = AppLocale.format(AppLocale.timeAsr);
+                      case 'Maghrib':
+                        displayName = AppLocale.format(AppLocale.timeMaghrib);
+                      case 'Isha':
+                        displayName = AppLocale.format(AppLocale.timeIsha);
+                    }
+
                     return _PrayerButton(
-                      name: prayer.name,
+                      name: displayName,
                       isCompleted: prayer.isCompleted,
                       onTap: () => salahProvider.togglePrayer(originalIndex),
                     );

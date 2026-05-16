@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_form_field.dart';
@@ -61,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           color: AppColors.primary,
           size: 44,
         ),
-        title: const Text('Account Created!'),
+        title: Text(AppLocale.format(AppLocale.authCreateAccount)),
         content: const Text(
           'Please check your inbox and confirm your email address before logging in.',
           textAlign: TextAlign.center,
@@ -73,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Navigator.of(context).pop(); // go back to login
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('Go to Login'),
+            child: Text(AppLocale.format(AppLocale.authLoginButton)),
           ),
         ],
       ),
@@ -115,8 +116,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Email
                     AuthFormField(
                       controller: _emailController,
-                      label: 'Email address',
-                      hint: 'you@example.com',
+                      label: AppLocale.format(AppLocale.authEmailLabel),
+                      hint: AppLocale.format(AppLocale.authEmailHint),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
@@ -129,8 +130,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Password
                     AuthFormField(
                       controller: _passwordController,
-                      label: 'Password',
-                      hint: 'At least 8 characters',
+                      label: AppLocale.format(AppLocale.authPasswordLabel),
+                      hint: AppLocale.format(AppLocale.authPasswordTooShort),
                       prefixIcon: Icons.lock_outline_rounded,
                       isPassword: true,
                       textInputAction: TextInputAction.next,
@@ -143,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Confirm password
                     AuthFormField(
                       controller: _confirmController,
-                      label: 'Confirm password',
+                      label: AppLocale.format(AppLocale.authPasswordLabel),
                       hint: '••••••••',
                       prefixIcon: Icons.lock_outline_rounded,
                       isPassword: true,
@@ -192,9 +193,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Create Account',
-                          style: TextStyle(
+                      : Text(
+                          AppLocale.format(AppLocale.authRegisterButton),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -209,8 +210,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Already have an account? ',
-                    style: TextStyle(color: AppColors.slate500),
+                    AppLocale.format(AppLocale.authHaveAccount),
+                    style: const TextStyle(color: AppColors.slate500),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -218,8 +219,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Navigator.of(context).pop();
                     },
                     child: Text(
-                      'Log in',
-                      style: TextStyle(
+                      AppLocale.format(AppLocale.authLoginButton),
+                      style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -238,15 +239,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // ── Validators ─────────────────────────────────────────────────────────────
 
   String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Email is required.';
+    if (value == null || value.trim().isEmpty) {
+      return AppLocale.format(AppLocale.authEmailRequired);
+    }
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    if (!emailRegex.hasMatch(value.trim())) return 'Enter a valid email.';
+    if (!emailRegex.hasMatch(value.trim())) {
+      return AppLocale.format(AppLocale.authEmailInvalid);
+    }
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Password is required.';
-    if (value.length < 8) return 'Password must be at least 8 characters.';
+    if (value == null || value.isEmpty) {
+      return AppLocale.format(AppLocale.authPasswordRequired);
+    }
+    if (value.length < 8) {
+      return AppLocale.format(AppLocale.authPasswordTooShort);
+    }
     if (!RegExp(r'[A-Z]').hasMatch(value)) {
       return 'Include at least one uppercase letter.';
     }
@@ -257,7 +266,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String? _validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) return 'Please confirm your password.';
+    if (value == null || value.isEmpty) {
+      return AppLocale.format(AppLocale.authPasswordRequired);
+    }
     if (value != _passwordController.text) return 'Passwords do not match.';
     return null;
   }
@@ -277,7 +288,7 @@ class _Header extends StatelessWidget {
             color: AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
+          child: const Icon(
             Icons.person_add_outlined,
             size: 40,
             color: AppColors.primary,
@@ -285,14 +296,14 @@ class _Header extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         Text(
-          'Create account',
+          AppLocale.format(AppLocale.authCreateAccount),
           style: Theme.of(
             context,
           ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
-          'Join Ramadan Planner today',
+          AppLocale.format(AppLocale.authRegisterSubtitle),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_form_field.dart';
@@ -17,6 +19,32 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _rememberMe = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('remembered_email');
+    if (savedEmail != null) {
+      setState(() {
+        _emailController.text = savedEmail;
+      });
+    }
+  }
+
+  Future<void> _saveEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString('remembered_email', _emailController.text.trim());
+    } else {
+      await prefs.remove('remembered_email');
+    }
+  }
 
   // Focus nodes allow us to move focus between fields programmatically.
   final _passwordFocus = FocusNode();
@@ -41,8 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
       password: _passwordController.text,
     );
 
-    if (!success && mounted) {
-      // Error is shown inline via the provider's errorMessage.
+    if (success) {
+      await _saveEmail();
     }
   }
 
@@ -69,8 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     AuthFormField(
                       controller: _emailController,
-                      label: 'Email address',
-                      hint: 'you@example.com',
+                      label: AppLocale.format(AppLocale.authEmailLabel),
+                      hint: AppLocale.format(AppLocale.authEmailHint),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
@@ -81,13 +109,39 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                     AuthFormField(
                       controller: _passwordController,
-                      label: 'Password',
+                      label: AppLocale.format(AppLocale.authPasswordLabel),
                       hint: '••••••••',
                       prefixIcon: Icons.lock_outline_rounded,
                       isPassword: true,
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: _submit,
                       validator: _validatePassword,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: Checkbox(
+                            value: _rememberMe,
+                            onChanged: (val) => setState(() => _rememberMe = val ?? false),
+                            activeColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setState(() => _rememberMe = !_rememberMe),
+                          child: const Text(
+                            'Remember Me',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.slate600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -126,9 +180,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Log In',
-                          style: TextStyle(
+                      : Text(
+                          AppLocale.format(AppLocale.authLoginButton),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -143,8 +197,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Don't have an account? ",
-                    style: TextStyle(color: AppColors.slate500),
+                    AppLocale.format(AppLocale.authNoAccount),
+                    style: const TextStyle(color: AppColors.slate500),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -156,8 +210,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                     child: Text(
-                      'Create one',
-                      style: TextStyle(
+                      AppLocale.format(AppLocale.authCreateOne),
+                      style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -176,14 +230,20 @@ class _LoginScreenState extends State<LoginScreen> {
   // ── Validators ─────────────────────────────────────────────────────────────
 
   String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Email is required.';
+    if (value == null || value.trim().isEmpty) {
+      return AppLocale.format(AppLocale.authEmailRequired);
+    }
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    if (!emailRegex.hasMatch(value.trim())) return 'Enter a valid email.';
+    if (!emailRegex.hasMatch(value.trim())) {
+      return AppLocale.format(AppLocale.authEmailInvalid);
+    }
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Password is required.';
+    if (value == null || value.isEmpty) {
+      return AppLocale.format(AppLocale.authPasswordRequired);
+    }
     return null;
   }
 }
@@ -202,7 +262,7 @@ class _Header extends StatelessWidget {
             color: AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
+          child: const Icon(
             Icons.mosque_outlined,
             size: 40,
             color: AppColors.primary,
@@ -210,14 +270,14 @@ class _Header extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         Text(
-          'Welcome back',
+          AppLocale.format(AppLocale.authWelcomeBack),
           style: Theme.of(
             context,
           ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
-          'Sign in to your Ramadan Planner',
+          AppLocale.format(AppLocale.authSignInSubtitle),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],

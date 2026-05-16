@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:provider/provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/dua_model.dart';
@@ -23,6 +25,7 @@ class DuaDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final langCode = FlutterLocalization.instance.currentLocale?.languageCode ?? 'bn';
 
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
@@ -38,7 +41,7 @@ class DuaDetailSheet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context, isDark),
+              _buildHeader(context, isDark, langCode),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 child: Column(
@@ -48,7 +51,9 @@ class DuaDetailSheet extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildDivider(isDark),
                     const SizedBox(height: 20),
-                    _buildBanglaSection(isDark),
+                    _buildPronunciationSection(context, isDark, langCode),
+                    const SizedBox(height: 16),
+                    _buildTranslationSection(context, isDark, langCode),
                     const SizedBox(height: 16),
                     _buildReference(isDark),
                     if (dua.tasbihTarget > 0) ...[
@@ -68,7 +73,48 @@ class DuaDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark) {
+  Widget _buildPronunciationSection(
+      BuildContext context, bool isDark, String langCode) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.primary.withValues(alpha: 0.1)
+            : AppColors.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocale.format(AppLocale.duaDetailPronunciation),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            dua.getPronounciation(langCode),
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.7,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white : AppColors.slate800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, bool isDark, String langCode) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 16, 20),
       decoration: BoxDecoration(
@@ -114,7 +160,7 @@ class DuaDetailSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      dua.categoryBangla,
+                      dua.getName(langCode),
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
@@ -123,7 +169,7 @@ class DuaDetailSheet extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      dua.group.banglaLabel,
+                      dua.group.getLabel(langCode),
                       style: TextStyle(
                         fontSize: 12,
                         color: dua.group.accentColor,
@@ -133,7 +179,7 @@ class DuaDetailSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildActionButtons(context, isDark),
+              _buildActionButtons(context, isDark, langCode),
             ],
           ),
         ],
@@ -141,7 +187,8 @@ class DuaDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, bool isDark) {
+  Widget _buildActionButtons(
+      BuildContext context, bool isDark, String langCode) {
     return Consumer<DuaProvider>(
       builder: (context, provider, _) {
         final isFav = provider.isFavorite(dua.id);
@@ -160,12 +207,15 @@ class DuaDetailSheet extends StatelessWidget {
               icon: Icons.copy_rounded,
               isDark: isDark,
               onTap: () {
+                final String p = AppLocale.format(AppLocale.duaDetailPronunciation);
+                final String t = AppLocale.format(AppLocale.duaDetailTranslation);
                 final text =
-                    '${dua.arabic}\n\n${dua.bangla}\n\n— ${dua.reference}';
+                    '${dua.arabic}\n\n$p: ${dua.getPronounciation(langCode)}\n\n$t: ${dua.getTranslation(langCode)}\n\n— ${dua.reference}';
                 Clipboard.setData(ClipboardData(text: text));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('কপি হয়েছে'),
+                    content: Text(
+                        AppLocale.format(AppLocale.duaDetailCopied)),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -230,7 +280,8 @@ class DuaDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildBanglaSection(bool isDark) {
+  Widget _buildTranslationSection(
+      BuildContext context, bool isDark, String langCode) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -244,7 +295,7 @@ class DuaDetailSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'বাংলা অর্থ',
+            AppLocale.format(AppLocale.duaDetailTranslation),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
@@ -254,7 +305,7 @@ class DuaDetailSheet extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            dua.bangla,
+            dua.getTranslation(langCode),
             style: TextStyle(
               fontSize: 15,
               height: 1.7,

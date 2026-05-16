@@ -1,12 +1,12 @@
 {
-    "name": "ramadan_planner",
-    "short_name": "ramadan_planner",
+    "name": "Ramadan Planner",
+    "short_name": "Ramadan",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#F6F8F7",
+    "theme_color": "#13EC6D",
+    "description": "Ramadan Planner - Prayer times, Quran, Dua & more",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

@@ -5,6 +5,7 @@ class PrayerTimesModel {
   final String asr;
   final String maghrib;
   final String isha;
+  final String jummah;
 
   final String gregorianDate; // e.g. "09 Mar 2026"
   final String hijriDate; // e.g. "20 Ramadan 1447"
@@ -16,6 +17,7 @@ class PrayerTimesModel {
     required this.asr,
     required this.maghrib,
     required this.isha,
+    required this.jummah,
     required this.gregorianDate,
     required this.hijriDate,
   });
@@ -33,6 +35,7 @@ class PrayerTimesModel {
       asr: timings['Asr'] ?? '',
       maghrib: timings['Maghrib'] ?? '',
       isha: timings['Isha'] ?? '',
+      jummah: '13:30', // Hardcoded as per user request
       gregorianDate: date['readable'] ?? '',
       hijriDate:
           '${hijri['day'] ?? ''} ${hijriMonth['en'] ?? ''} ${hijri['year'] ?? ''}',

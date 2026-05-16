@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/surah_info_model.dart';
 import '../screens/surah_detail_screen.dart';
@@ -37,7 +38,7 @@ class SurahListTile extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
       subtitle: Text(
-        '${surah.revelationPlace} • ${surah.totalAyah} Verses',
+        '${surah.revelationPlace} • ${surah.totalAyah} ${AppLocale.format(AppLocale.quranVerses)}',
         style: TextStyle(
           color: isDark ? AppColors.slate400 : AppColors.slate600,
           fontSize: 12,

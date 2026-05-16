@@ -46,7 +46,9 @@ dependencies:
   google_fonts: ^6.2.1
   
   # Date and time formatting
-  intl: ^0.19.0
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
 
   # Open URLs (ad redirect links) in external browser
   url_launcher: ^6.3.1
@@ -56,6 +58,7 @@ dependencies:
   geocoding: ^4.0.0
   permission_handler: ^12.0.1
   shared_preferences: ^2.5.4
+  flutter_localization: ^0.4.0
 
 dev_dependencies:
   flutter_test:
