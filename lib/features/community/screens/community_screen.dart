@@ -5,13 +5,13 @@ import 'package:provider/provider.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_card.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../auth/screens/login_screen.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../models/community_announcement_model.dart';
 import '../models/community_event_model.dart';
-import '../providers/community_admin_provider.dart';
 import '../providers/community_feed_provider.dart';
 import '../providers/community_notification_provider.dart';
-import 'community_admin_panel_screen.dart';
 import 'community_calendar_screen.dart';
 import 'community_event_detail_screen.dart';
 import 'create_event_request_screen.dart';
@@ -30,7 +30,6 @@ class CommunityScreen extends StatefulWidget {
 class _CommunityScreenState extends State<CommunityScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -40,25 +39,8 @@ class _CommunityScreenState extends State<CommunityScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final feedProvider = context.read<CommunityFeedProvider>();
       final notificationProvider = context.read<CommunityNotificationProvider>();
-      final adminProvider = context.read<CommunityAdminProvider>();
       await feedProvider.fetchInitial();
       await notificationProvider.fetchNotifications();
-      final admin = await adminProvider.isCurrentUserAdmin();
-      if (!mounted) return;
-      if (_isAdmin == admin) return;
-      final previousController = _tabController;
-      final nextIndex = previousController.index.clamp(0, admin ? 3 : 2);
-      final nextController = TabController(
-        length: admin ? 4 : 3,
-        vsync: this,
-        initialIndex: nextIndex,
-      );
-      setState(() {
-        _isAdmin = admin;
-        _tabController = nextController;
-        _tabController.addListener(() => setState(() {}));
-      });
-      previousController.dispose();
     });
   }
 
@@ -166,7 +148,6 @@ class _CommunityScreenState extends State<CommunityScreen>
                 Tab(text: AppLocale.format(AppLocale.communityFeed)),
                 Tab(text: AppLocale.format(AppLocale.communityCalendar)),
                 Tab(text: AppLocale.format(AppLocale.communityQA)),
-                if (_isAdmin) Tab(text: AppLocale.format(AppLocale.communityAdmin)),
               ],
             ),
           ),
@@ -179,7 +160,6 @@ class _CommunityScreenState extends State<CommunityScreen>
           const _CommunityFeedTab(),
           const CommunityCalendarScreen(),
           const CommunityQATab(),
-          if (_isAdmin) const CommunityAdminPanelScreen(),
         ],
       ),
     );
@@ -310,10 +290,15 @@ class _CommunityFeedTab extends StatelessWidget {
             child: FloatingActionButton.extended(
               heroTag: 'feed_fab',
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CreateEventRequestScreen()),
-                );
+                final auth = context.read<AuthProvider>();
+                if (!auth.isLoggedIn) {
+                  showAuthRequiredDialog(context, 'request an event');
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CreateEventRequestScreen()),
+                  );
+                }
               },
               backgroundColor: isDark ? AppColors.slate700 : AppColors.slate900,
               foregroundColor: Colors.white,
@@ -788,4 +773,57 @@ class _FundraiserBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+void showAuthRequiredDialog(BuildContext context, String actionText) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isDark ? AppColors.slate900 : Colors.white,
+        title: Row(
+          children: [
+            const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 28),
+            const SizedBox(width: 12),
+            const Text(
+              'Account Required',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'You need to create an account or sign in to $actionText. It takes less than a minute!',
+          style: TextStyle(
+            color: isDark ? AppColors.slate300 : AppColors.slate700,
+            fontSize: 15,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
+            ),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Sign In / Register'),
+          ),
+        ],
+      );
+    },
+  );
 }

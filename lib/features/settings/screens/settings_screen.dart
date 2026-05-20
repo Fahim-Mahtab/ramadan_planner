@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../notices/screens/admin_notices_screen.dart';
+import '../../auth/screens/login_screen.dart';
 
 /// Settings screen — shows current user info and a logout button.
 class SettingsScreen extends StatelessWidget {
@@ -14,14 +14,38 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
-    final email = user?.email ?? 'Unknown user';
-    final name = email
-        .split('@')
-        .first
-        .replaceAll(RegExp(r'[._]'), ' ')
-        .split(' ')
-        .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+    final isGuest = user == null;
+
+    String displayName = 'Guest';
+    String displayContact = 'Not signed in';
+
+    if (!isGuest) {
+      final metaName = user.userMetadata?['full_name']?.toString();
+      final metaPhone = user.userMetadata?['phone']?.toString();
+      final emailStr = user.email;
+
+      if (metaName != null && metaName.trim().isNotEmpty) {
+        displayName = metaName.trim();
+      } else if (emailStr != null) {
+        displayName = emailStr
+            .split('@')
+            .first
+            .replaceAll(RegExp(r'[._]'), ' ')
+            .split(' ')
+            .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
+            .join(' ');
+      } else {
+        displayName = 'User';
+      }
+
+      if (metaPhone != null && metaPhone.trim().isNotEmpty) {
+        displayContact = metaPhone.trim();
+      } else if (emailStr != null) {
+        displayContact = emailStr;
+      } else {
+        displayContact = 'No contact info';
+      }
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -50,127 +74,112 @@ class SettingsScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 12),
 
-              // ── Profile card ────────────────────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.primary, AppColors.emerald600],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          name.isNotEmpty ? name[0].toUpperCase() : '?',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1A1A2E),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            email,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade500,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+            // ── Profile card ────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, AppColors.emerald600],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          displayContact,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
 
-              // ── Language section ────────────────────────────────────────
-              _sectionLabel(AppLocale.format(AppLocale.settingsLanguage)),
-              const SizedBox(height: 10),
-              _buildLanguageSwitcher(context),
-              const SizedBox(height: 32),
+            // ── Language section ────────────────────────────────────────
+            _sectionLabel(AppLocale.format(AppLocale.settingsLanguage)),
+            const SizedBox(height: 10),
+            _buildLanguageSwitcher(context),
+            const SizedBox(height: 32),
 
-              // ── Account section ─────────────────────────────────────────
+            // ── Account section ─────────────────────────────────────────
+            if (!isGuest) ...[
               _sectionLabel(AppLocale.format(AppLocale.settingsAccount)),
               const SizedBox(height: 10),
               _SettingsTile(
-                icon: Icons.email_outlined,
-                label: AppLocale.format(AppLocale.settingsEmail),
+                icon: Icons.contact_phone_outlined,
+                label: 'Contact Info',
                 trailing: Text(
-                  email,
+                  displayContact,
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(height: 32),
+            ],
 
-              // ── Admin Tools ─────────────────────────────────────────────
-              _sectionLabel(AppLocale.format(AppLocale.settingsAdmin)),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const AdminNoticesScreen()),
-                  );
-                },
-                child: _SettingsTile(
-                  icon: Icons.campaign_rounded,
-                  label: AppLocale.format(AppLocale.settingsAdminNotices),
-                  trailing: Icon(Icons.chevron_right_rounded,
-                      color: Colors.grey.shade400),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // ── Session ─────────────────────────────────────────────────
-              _sectionLabel(AppLocale.format(AppLocale.settingsSession)),
-              const SizedBox(height: 10),
+            // ── Session ─────────────────────────────────────────────────
+            _sectionLabel(AppLocale.format(AppLocale.settingsSession)),
+            const SizedBox(height: 10),
+            if (isGuest)
+              const _LoginTile()
+            else
               Consumer<AuthProvider>(
                 builder: (context, auth, _) => _LogoutTile(auth: auth),
               ),
 
-              const SizedBox(height: 100),
-            ],
-          ),
+            const SizedBox(height: 100),
+          ],
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildLanguageSwitcher(BuildContext context) {
@@ -246,6 +255,64 @@ class SettingsScreen extends StatelessWidget {
         fontWeight: FontWeight.w600,
         color: Colors.grey.shade500,
         letterSpacing: 0.8,
+      ),
+    );
+  }
+}
+
+class _LoginTile extends StatelessWidget {
+  const _LoginTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.login_rounded,
+                size: 18,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Text(
+                'Sign In / Create Account',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
+          ],
+        ),
       ),
     );
   }

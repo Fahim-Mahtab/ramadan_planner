@@ -32,15 +32,8 @@ class _AuthGateState extends State<AuthGate> {
           return const _LoadingScreen();
         }
 
-        final session = snapshot.data?.session;
-
-        if (session == null) {
-          // Signed out — reset flag so the ad shows again on next login.
-          _adShown = false;
-          return const LoginScreen();
-        }
-
-        // Authenticated — show ad once, then home.
+        // Show ad once per app run, then proceed to HomeScreen.
+        // Guests and authenticated users are treated equally on start.
         if (!_adShown) {
           return AdScreen(onDone: () => setState(() => _adShown = true));
         }

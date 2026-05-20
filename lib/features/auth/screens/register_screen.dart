@@ -15,18 +15,26 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
 
+  final _phoneFocus = FocusNode();
+  final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _confirmFocus = FocusNode();
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
+    _phoneFocus.dispose();
+    _emailFocus.dispose();
     _passwordFocus.dispose();
     _confirmFocus.dispose();
     super.dispose();
@@ -38,17 +46,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final auth = context.read<AuthProvider>();
     final success = await auth.signUp(
-      email: _emailController.text,
+      fullName: _nameController.text,
+      phone: _phoneController.text,
       password: _passwordController.text,
+      email: _emailController.text,
     );
 
     if (!mounted) return;
 
     if (success) {
-      // Show confirmation and go back to login.
-      // If Supabase email confirmation is ON, the user gets an email;
-      // if it's OFF, they are logged in immediately via AuthGate.
-      _showSuccessDialog();
+      // If email confirmation is disabled, user is logged in automatically and auth state resets.
+      // Pop to return to previous screen instantly.
+      if (auth.isLoggedIn) {
+        Navigator.of(context).pop();
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      } else {
+        _showSuccessDialog();
+      }
     }
   }
 
@@ -113,14 +129,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    // Email
+                    // Full Name
+                    AuthFormField(
+                      controller: _nameController,
+                      label: AppLocale.format(AppLocale.authFullNameLabel),
+                      hint: AppLocale.format(AppLocale.authFullNameHint),
+                      prefixIcon: Icons.person_outline_rounded,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: () =>
+                          FocusScope.of(context).requestFocus(_phoneFocus),
+                      validator: _validateName,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Phone Number
+                    AuthFormField(
+                      controller: _phoneController,
+                      label: 'Phone Number',
+                      hint: '01XXXXXXXXX',
+                      prefixIcon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      textInputAction: TextInputAction.next,
+                      focusNode: _phoneFocus,
+                      onFieldSubmitted: () =>
+                          FocusScope.of(context).requestFocus(_emailFocus),
+                      validator: _validatePhone,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Email (Optional)
                     AuthFormField(
                       controller: _emailController,
-                      label: AppLocale.format(AppLocale.authEmailLabel),
+                      label: '${AppLocale.format(AppLocale.authEmailLabel)} (Optional)',
                       hint: AppLocale.format(AppLocale.authEmailHint),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
+                      focusNode: _emailFocus,
                       onFieldSubmitted: () =>
                           FocusScope.of(context).requestFocus(_passwordFocus),
                       validator: _validateEmail,
@@ -135,6 +180,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       prefixIcon: Icons.lock_outline_rounded,
                       isPassword: true,
                       textInputAction: TextInputAction.next,
+                      focusNode: _passwordFocus,
                       onFieldSubmitted: () =>
                           FocusScope.of(context).requestFocus(_confirmFocus),
                       validator: _validatePassword,
@@ -149,6 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       prefixIcon: Icons.lock_outline_rounded,
                       isPassword: true,
                       textInputAction: TextInputAction.done,
+                      focusNode: _confirmFocus,
                       onFieldSubmitted: _submit,
                       validator: _validateConfirmPassword,
                     ),
@@ -238,9 +285,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // ── Validators ─────────────────────────────────────────────────────────────
 
+  String? _validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Full Name is required.';
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone Number is required.';
+    }
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 10 || digits.length > 15) {
+      return 'Please enter a valid phone number.';
+    }
+    return null;
+  }
+
   String? _validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return AppLocale.format(AppLocale.authEmailRequired);
+      return null; // Optional
     }
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (!emailRegex.hasMatch(value.trim())) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../auth/screens/login_screen.dart';
 import '../providers/community_admin_provider.dart';
 import '../providers/community_qa_provider.dart';
 import 'qa_question_card.dart';
@@ -41,7 +43,14 @@ class _CommunityQATabState extends State<CommunityQATab> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 70),
         child: FloatingActionButton(
-          onPressed: () => _showAskQuestionDialog(context),
+          onPressed: () {
+            final auth = context.read<AuthProvider>();
+            if (!auth.isLoggedIn) {
+              _showAuthRequiredDialog(context);
+            } else {
+              _showAskQuestionDialog(context);
+            }
+          },
           backgroundColor: isDark ? AppColors.slate700 : AppColors.slate900,
           child: const Icon(Icons.add_comment_rounded, color: Colors.white),
         ),
@@ -275,6 +284,59 @@ class _CommunityQATabState extends State<CommunityQATab> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showAuthRequiredDialog(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: isDark ? AppColors.slate900 : Colors.white,
+          title: Row(
+            children: [
+              const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              const Text(
+                'Account Required',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            'You need to create an account or sign in to ask a question. It takes less than a minute!',
+            style: TextStyle(
+              color: isDark ? AppColors.slate300 : AppColors.slate700,
+              fontSize: 15,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Sign In / Register'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

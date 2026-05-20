@@ -43,15 +43,29 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  /// Create a new account with [email] and [password].
+  /// Create a new account with [fullName], [phone], [password], and optional [email].
   /// Returns `true` when the account was created successfully.
-  Future<bool> signUp({required String email, required String password}) async {
+  Future<bool> signUp({
+    required String fullName,
+    required String phone,
+    required String password,
+    String? email,
+  }) async {
     _setLoading(true);
 
     try {
+      final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+      final effectiveEmail = (email != null && email.trim().isNotEmpty)
+          ? email.trim()
+          : '$cleanPhone@phone.ramadanplanner.local';
+
       final response = await _client.auth.signUp(
-        email: email.trim(),
+        email: effectiveEmail,
         password: password,
+        data: {
+          'full_name': fullName.trim(),
+          'phone': phone.trim(),
+        },
       );
 
       // Supabase returns a session immediately if email confirmation is

@@ -12,6 +12,7 @@ class EventDetailProvider with ChangeNotifier {
   Map<String, int> _reactions = {};
   bool _isLoading = false;
   String? _error;
+  RealtimeChannel? _realtimeChannel;
 
   List<CommunityCommentModel> get comments => _comments;
   CommunityDonationSummaryModel get donationSummary => _donationSummary;
@@ -140,5 +141,77 @@ class EventDetailProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('EventDetailProvider toggleReaction error: $e');
     }
+  }
+
+  void subscribeToEventChanges(String eventRequestId) {
+    unsubscribeFromEventChanges();
+
+    _realtimeChannel = _supabase.channel('event_detail_$eventRequestId');
+
+    _realtimeChannel!
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'event_comments',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'event_request_id',
+            value: eventRequestId,
+          ),
+          callback: (payload) {
+            loadEventDetails(eventRequestId);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'event_reactions',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'event_request_id',
+            value: eventRequestId,
+          ),
+          callback: (payload) {
+            loadEventDetails(eventRequestId);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'donations',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'event_request_id',
+            value: eventRequestId,
+          ),
+          callback: (payload) {
+            loadEventDetails(eventRequestId);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'donation_expenses',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'event_request_id',
+            value: eventRequestId,
+          ),
+          callback: (payload) {
+            loadEventDetails(eventRequestId);
+          },
+        )
+        .subscribe();
+  }
+
+  void unsubscribeFromEventChanges() {
+    _realtimeChannel?.unsubscribe();
+    _realtimeChannel = null;
+  }
+
+  @override
+  void dispose() {
+    unsubscribeFromEventChanges();
+    super.dispose();
   }
 }

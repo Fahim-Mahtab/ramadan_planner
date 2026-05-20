@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_card.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../auth/screens/login_screen.dart';
 import '../models/community_comment_model.dart';
 import '../models/community_event_model.dart';
 import '../providers/community_admin_provider.dart';
@@ -22,14 +24,16 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
   static const double _maxContentWidth = 800;
   final _commentController = TextEditingController();
   bool _isAdmin = false;
+  late EventDetailProvider _provider;
 
   @override
   void initState() {
     super.initState();
+    _provider = context.read<EventDetailProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final eventDetailProvider = context.read<EventDetailProvider>();
       final adminProvider = context.read<CommunityAdminProvider>();
-      await eventDetailProvider.loadEventDetails(widget.event.id);
+      await _provider.loadEventDetails(widget.event.id);
+      _provider.subscribeToEventChanges(widget.event.id);
       final admin = await adminProvider.isCurrentUserAdmin();
       if (!mounted) return;
       setState(() => _isAdmin = admin);
@@ -39,6 +43,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
   @override
   void dispose() {
     _commentController.dispose();
+    _provider.unsubscribeFromEventChanges();
     super.dispose();
   }
 
@@ -295,7 +300,14 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                final auth = context.read<AuthProvider>();
+                if (!auth.isLoggedIn) {
+                  _showAuthRequiredDialog(context, 'donate to this event');
+                } else {
+                  // normal donation flow
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange.shade700,
                 foregroundColor: Colors.white,
@@ -319,7 +331,14 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
           label: 'Like',
           count: provider.reactions['like'] ?? 0,
           color: Colors.pink,
-          onTap: () => provider.toggleReaction(eventRequestId: widget.event.id, reactionType: 'like'),
+          onTap: () {
+            final auth = context.read<AuthProvider>();
+            if (!auth.isLoggedIn) {
+              _showAuthRequiredDialog(context, 'like this event');
+            } else {
+              provider.toggleReaction(eventRequestId: widget.event.id, reactionType: 'like');
+            }
+          },
         ),
         const SizedBox(width: 12),
         _ReactionPill(
@@ -328,7 +347,14 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
           label: 'Support',
           count: provider.reactions['support'] ?? 0,
           color: Colors.orange,
-          onTap: () => provider.toggleReaction(eventRequestId: widget.event.id, reactionType: 'support'),
+          onTap: () {
+            final auth = context.read<AuthProvider>();
+            if (!auth.isLoggedIn) {
+              _showAuthRequiredDialog(context, 'support this event');
+            } else {
+              provider.toggleReaction(eventRequestId: widget.event.id, reactionType: 'support');
+            }
+          },
         ),
       ],
     );
@@ -386,6 +412,11 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
           const SizedBox(width: 8),
           IconButton(
             onPressed: () async {
+              final auth = context.read<AuthProvider>();
+              if (!auth.isLoggedIn) {
+                _showAuthRequiredDialog(context, 'post a comment');
+                return;
+              }
               final text = _commentController.text.trim();
               if (text.isEmpty) return;
               final ok = await context.read<EventDetailProvider>().addComment(
@@ -486,6 +517,59 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
           ],
         ),
       ),
+    );
+  }
+
+  void _showAuthRequiredDialog(BuildContext context, String actionText) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: isDark ? AppColors.slate900 : Colors.white,
+          title: Row(
+            children: [
+              const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              const Text(
+                'Account Required',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            'You need to create an account or sign in to $actionText. It takes less than a minute!',
+            style: TextStyle(
+              color: isDark ? AppColors.slate300 : AppColors.slate700,
+              fontSize: 15,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Sign In / Register'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

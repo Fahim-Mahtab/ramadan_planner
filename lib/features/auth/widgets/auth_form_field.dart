@@ -12,6 +12,7 @@ class AuthFormField extends StatefulWidget {
   final String? Function(String?) validator;
   final TextInputAction textInputAction;
   final VoidCallback? onFieldSubmitted;
+  final FocusNode? focusNode;
 
   const AuthFormField({
     super.key,
@@ -24,6 +25,7 @@ class AuthFormField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.next,
     this.onFieldSubmitted,
+    this.focusNode,
   });
 
   @override
@@ -37,6 +39,7 @@ class _AuthFormFieldState extends State<AuthFormField> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
+      focusNode: widget.focusNode,
       obscureText: widget.isPassword && _obscureText,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
