@@ -130,6 +130,8 @@ class AppLocale {
   static const timeAsr = 'timeAsr';
   static const timeMaghrib = 'timeMaghrib';
   static const timeIsha = 'timeIsha';
+  static const timeNextPrayer = 'timeNextPrayer';
+  static const timeNextPrayerIn = 'timeNextPrayerIn';
 
   // Home Section Headers
   static const homeInspirations = 'homeInspirations';
@@ -182,11 +184,32 @@ class AppLocale {
   static const noticeComingSoon = 'noticeComingSoon';
   static const noticeShareComingSoon = 'noticeShareComingSoon';
 
+  // Zakat
+  static const zakatTitle = 'zakatTitle';
+  static const zakatSubtitle = 'zakatSubtitle';
+  static const zakatFamilyMembers = 'zakatFamilyMembers';
+  static const zakatSelectType = 'zakatSelectType';
+  static const zakatTotalAmount = 'zakatTotalAmount';
+  static const zakatFitraWheat = 'zakatFitraWheat';
+  static const zakatFitraBarley = 'zakatFitraBarley';
+  static const zakatFitraDates = 'zakatFitraDates';
+  static const zakatFitraRaisins = 'zakatFitraRaisins';
+  static const zakatFitraCheese = 'zakatFitraCheese';
+  static const zakatCalculateFitra = 'zakatCalculateFitra';
+  static const zakatFitraDisclaimer = 'zakatFitraDisclaimer';
+
   static const duaCountSuffix = 'duaCountSuffix';
 
   // Header
   static const headerIftar = 'headerIftar';
   static const headerSuhoor = 'headerSuhoor';
+  static const headerSuhoorEnds = 'headerSuhoorEnds';
+  static const headerIftarToday = 'headerIftarToday';
+  static const headerIftarIn = 'headerIftarIn';
+  static const headerSuhoorTime = 'headerSuhoorTime';
+  static const headerSuhoorIn = 'headerSuhoorIn';
+  static const headerIftarTime = 'headerIftarTime';
+  static const headerEverydayTitle = 'headerEverydayTitle';
   static const headerFetching = 'headerFetching';
   static const headerLoading = 'headerLoading';
 
@@ -331,6 +354,8 @@ class AppLocale {
     timeAsr: 'Asr',
     timeMaghrib: 'Maghrib',
     timeIsha: 'Isha',
+    timeNextPrayer: 'Next Prayer',
+    timeNextPrayerIn: 'Starts In',
 
     // Home Section Headers
     homeInspirations: "Today's Inspirations",
@@ -338,7 +363,7 @@ class AppLocale {
 
     // Ayah Card
     ayahTitle: 'Ayah of the Day',
-    ayahText: 'شَهْرُ رَمَضَانَ الَّذِي أُنزِلَ فِيهِ الْقُرْآنُ هُدًى لِّلنَّاسِ',
+    ayahText: 'شَهْرُ رَمَضَانَ الَّذِي أُنزِلَ ফিহিল কুরআনু হুদাল্লিন নাসি',
     ayahTranslation: '"The month of Ramadan [is that] in which was revealed the Qur\'an, a guidance for the people."',
     ayahReference: '— Surah Al-Baqarah 2:185',
 
@@ -383,11 +408,32 @@ class AppLocale {
     noticeComingSoon: 'Coming soon!',
     noticeShareComingSoon: 'Share functionality coming soon!',
 
+    // Zakat
+    zakatTitle: 'Zakat-al-Fitr',
+    zakatSubtitle: 'Calculate your Sadaqatul Fitr',
+    zakatFamilyMembers: 'Family Members',
+    zakatSelectType: 'Select Item Type',
+    zakatTotalAmount: 'Total Amount',
+    zakatFitraWheat: 'Wheat (Minimum)',
+    zakatFitraBarley: 'Barley',
+    zakatFitraDates: 'Dates',
+    zakatFitraRaisins: 'Raisins',
+    zakatFitraCheese: 'Cheese / Ajwa',
+    zakatCalculateFitra: 'Calculate Fitra',
+    zakatFitraDisclaimer: 'Rates are approximate and based on current market values.',
+
     duaCountSuffix: '',
 
     // Header
     headerIftar: 'Iftar At',
     headerSuhoor: 'Suhoor Ends',
+    headerSuhoorEnds: 'Suhoor Ends',
+    headerIftarToday: 'Iftar Today',
+    headerIftarIn: 'Iftar In',
+    headerSuhoorTime: 'Suhoor Time',
+    headerSuhoorIn: 'Suhoor In',
+    headerIftarTime: 'Iftar Time',
+    headerEverydayTitle: 'Daily Tracker',
     headerFetching: 'Fetching Date...',
     headerLoading: 'Loading',
 
@@ -533,6 +579,8 @@ class AppLocale {
     timeAsr: 'আসর',
     timeMaghrib: 'মাগরিব',
     timeIsha: 'ইশা',
+    timeNextPrayer: 'পরবর্তী নামাজ',
+    timeNextPrayerIn: 'শুরু হতে',
 
     // Home Section Headers
     homeInspirations: 'আজকের অনুপ্রেরণা',
@@ -540,7 +588,7 @@ class AppLocale {
 
     // Ayah Card
     ayahTitle: 'আজকের আয়াত',
-    ayahText: 'شَهْرُ رَمَضَانَ الَّذِي أُنزِلَ فِيهِ الْقُرْآنُ هُدًى لِّلنَّাসِ',
+    ayahText: 'শহরু রামাদানাল্লাজি উনজিলা ফিহিল কুরআন',
     ayahTranslation: '"রমজান মাসই হলো সেই মাস, যাতে নাযিল করা হয়েছে কুরআন, যা মানুষের জন্য হেদায়েত।"',
     ayahReference: '— সূরা আল-বাকারা ২:১৮৫',
 
@@ -585,11 +633,32 @@ class AppLocale {
     noticeComingSoon: 'শীঘ্রই আসছে!',
     noticeShareComingSoon: 'শেয়ার সুবিধা শীঘ্রই আসছে!',
 
+    // Zakat
+    zakatTitle: 'যাকাতুল ফিতর',
+    zakatSubtitle: 'আপনার ফিতরা হিসাব করুন',
+    zakatFamilyMembers: 'পরিবারের সদস্য সংখ্যা',
+    zakatSelectType: 'দ্রব্যের ধরন নির্বাচন করুন',
+    zakatTotalAmount: 'মোট পরিমাণ',
+    zakatFitraWheat: 'আটা (সর্বনিম্ন)',
+    zakatFitraBarley: 'যব',
+    zakatFitraDates: 'খেজুর',
+    zakatFitraRaisins: 'কিশমিশ',
+    zakatFitraCheese: 'পনির / আজওয়া',
+    zakatCalculateFitra: 'ফিতরা হিসাব করুন',
+    zakatFitraDisclaimer: 'এই হারগুলো বাজার মূল্যের উপর ভিত্তি করে আনুমানিক।',
+
     duaCountSuffix: 'টি',
 
     // Header
     headerIftar: 'ইফতার',
     headerSuhoor: 'সাহরি শেষ',
+    headerSuhoorEnds: 'সাহরি শেষ',
+    headerIftarToday: 'আজ ইফতার',
+    headerIftarIn: 'ইফতার হতে',
+    headerSuhoorTime: 'সাহরির সময়',
+    headerSuhoorIn: 'সাহরি হতে',
+    headerIftarTime: 'ইফতারের সময়',
+    headerEverydayTitle: 'দৈনিক ইবাদত',
     headerFetching: 'তারিখ লোড হচ্ছে...',
     headerLoading: 'লোড হচ্ছে',
 

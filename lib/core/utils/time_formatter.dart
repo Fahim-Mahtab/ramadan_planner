@@ -18,4 +18,33 @@ class TimeFormatter {
       return time24;
     }
   }
+
+  /// Parses a 24-hour time string "HH:MM" and returns a DateTime for today.
+  static DateTime? parseToDateTime(String time24, {bool isNextDay = false}) {
+    if (time24.isEmpty) return null;
+    final rawTime = time24.split(' ').first;
+    try {
+      final parts = rawTime.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      final now = DateTime.now();
+      var target = DateTime(now.year, now.month, now.day, hour, minute);
+      if (isNextDay) target = target.add(const Duration(days: 1));
+      return target;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Converts English digits to Bengali digits.
+  static String toBengaliDigits(String input) {
+    const english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bengali = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+    String result = input;
+    for (int i = 0; i < english.length; i++) {
+      result = result.replaceAll(english[i], bengali[i]);
+    }
+    return result;
+  }
 }

@@ -106,18 +106,19 @@ class PrayerTimesProvider with ChangeNotifier {
           final timings = apiData['timings'] ?? {};
           final date = apiData['date'] ?? {};
           final hijri = date['hijri'] ?? {};
-          final hijriMonth = hijri['month'] ?? {};
+          final hijriMonthData = hijri['month'] ?? {};
 
           _prayerTimes = PrayerTimesModel(
-            fajr: '04:55',
+            fajr: timings['Fajr'] ?? '',
             sunrise: timings['Sunrise'] ?? '',
-            dhuhr: '13:30',
-            asr: '17:15',
-            maghrib: '18:38',
-            isha: '20:30',
+            dhuhr: timings['Dhuhr'] ?? '',
+            asr: timings['Asr'] ?? '',
+            maghrib: timings['Maghrib'] ?? '',
+            isha: timings['Isha'] ?? '',
             jummah: '13:30',
             gregorianDate: date['readable'] ?? '',
-            hijriDate: '${hijri['day'] ?? ''} ${hijriMonth['en'] ?? ''} ${hijri['year'] ?? ''}',
+            hijriDate: '${hijri['day'] ?? ''} ${hijriMonthData['en'] ?? ''} ${hijri['year'] ?? ''}',
+            hijriMonth: hijriMonthData['en'] ?? '',
           );
         } else {
           _error = "Failed to parse API response structure.";

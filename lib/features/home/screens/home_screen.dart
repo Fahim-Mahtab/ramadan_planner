@@ -103,35 +103,43 @@ class _HomePage extends StatelessWidget {
             offset: const Offset(0, -16),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Notification board
-                  const NoticeBoardWidget(),
-                  const SizedBox(height: 16),
+              child: Consumer<PrayerTimesProvider>(
+                builder: (context, provider, _) {
+                  final isRamadan = provider.prayerTimes?.isRamadan ?? true;
 
-                  // ── Spiritual Inspirations ────────────────────────────────
-                  _SectionHeader(
-                      label: AppLocale.format(AppLocale.homeInspirations)),
-                  const SizedBox(height: 12),
-                  const AyahCard(),
-                  const SizedBox(height: 16),
-                  const DuaCard(),
-                  const SizedBox(height: 16),
-                  const AsmaulHusnaCard(),
-                  const SizedBox(height: 24),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Notification board
+                      const NoticeBoardWidget(),
+                      const SizedBox(height: 16),
 
-                  // ── Daily Trackers ────────────────────────────────────────
-                  _SectionHeader(
-                      label: AppLocale.format(AppLocale.homeDailyAmal)),
-                  const SizedBox(height: 12),
-                  const SalahTrackerWidget(),
-                  const SizedBox(height: 24),
-                  const QuranProgressWidget(),
-                  const SizedBox(height: 24),
-                  const ChecklistWidget(),
-                  const SizedBox(height: 110),
-                ],
+                      // ── Spiritual Inspirations ────────────────────────────────
+                      _SectionHeader(
+                          label: AppLocale.format(AppLocale.homeInspirations)),
+                      const SizedBox(height: 12),
+                      const AyahCard(),
+                      const SizedBox(height: 16),
+                      const DuaCard(),
+                      const SizedBox(height: 16),
+                      const AsmaulHusnaCard(),
+                      const SizedBox(height: 24),
+
+                      // ── Daily Trackers ────────────────────────────────────────
+                      _SectionHeader(
+                          label: AppLocale.format(AppLocale.homeDailyAmal)),
+                      const SizedBox(height: 12),
+                      const SalahTrackerWidget(),
+                      const SizedBox(height: 24),
+                      if (isRamadan) ...[
+                        const QuranProgressWidget(),
+                        const SizedBox(height: 24),
+                      ],
+                      const ChecklistWidget(),
+                      const SizedBox(height: 110),
+                    ],
+                  );
+                },
               ),
             ),
           ),

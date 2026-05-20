@@ -9,6 +9,7 @@ class PrayerTimesModel {
 
   final String gregorianDate; // e.g. "09 Mar 2026"
   final String hijriDate; // e.g. "20 Ramadan 1447"
+  final String hijriMonth; // e.g. "Ramadan"
 
   PrayerTimesModel({
     required this.fajr,
@@ -20,13 +21,16 @@ class PrayerTimesModel {
     required this.jummah,
     required this.gregorianDate,
     required this.hijriDate,
+    required this.hijriMonth,
   });
+
+  bool get isRamadan => hijriMonth.toLowerCase() == 'ramadan';
 
   factory PrayerTimesModel.fromJson(Map<String, dynamic> json) {
     final timings = json['timings'] ?? {};
     final date = json['date'] ?? {};
     final hijri = date['hijri'] ?? {};
-    final hijriMonth = hijri['month'] ?? {};
+    final hijriMonthData = hijri['month'] ?? {};
 
     return PrayerTimesModel(
       fajr: timings['Fajr'] ?? '',
@@ -38,7 +42,8 @@ class PrayerTimesModel {
       jummah: '13:30', // Hardcoded as per user request
       gregorianDate: date['readable'] ?? '',
       hijriDate:
-          '${hijri['day'] ?? ''} ${hijriMonth['en'] ?? ''} ${hijri['year'] ?? ''}',
+          '${hijri['day'] ?? ''} ${hijriMonthData['en'] ?? ''} ${hijri['year'] ?? ''}',
+      hijriMonth: hijriMonthData['en'] ?? '',
     );
   }
 }
