@@ -1,0 +1,96 @@
+import '../models/islamic_event.dart';
+
+final List<IslamicEvent> importantDates = [
+  IslamicEvent(
+    title: 'Islamic New Year',
+    description: '1st Muharram — Hijri New Year',
+    hijriDay: 1,
+    hijriMonth: 1,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: 'Day of Ashura',
+    description: '10th Muharram — Recommended fast',
+    hijriDay: 10,
+    hijriMonth: 1,
+    type: EventType.recommended,
+  ),
+  IslamicEvent(
+    title: 'Mawlid un-Nabi',
+    description: '12th Rabi\' al-Awwal — Birth of Prophet Muhammad (SAW)',
+    hijriDay: 12,
+    hijriMonth: 3,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: 'Isra wal Miraj',
+    description: '27th Rajab — Night Journey & Ascension',
+    hijriDay: 27,
+    hijriMonth: 7,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: 'Shab-e-Barat',
+    description: '15th Sha\'ban — Night of Forgiveness',
+    hijriDay: 15,
+    hijriMonth: 8,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: '1st Ramadan',
+    description: '1st Ramadan — Start of fasting month',
+    hijriDay: 1,
+    hijriMonth: 9,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: 'Laylatul Qadr',
+    description: '27th Ramadan — Night of Power (odd last 10 nights)',
+    hijriDay: 27,
+    hijriMonth: 9,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: 'Eid al-Fitr',
+    description: '1st Shawwal — Festival of Breaking the Fast',
+    hijriDay: 1,
+    hijriMonth: 10,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: 'Day of Arafah',
+    description: '9th Dhul Hijjah — Best day of the year, recommended fast',
+    hijriDay: 9,
+    hijriMonth: 12,
+    type: EventType.recommended,
+  ),
+  IslamicEvent(
+    title: 'Eid al-Adha',
+    description: '10th Dhul Hijjah — Festival of Sacrifice',
+    hijriDay: 10,
+    hijriMonth: 12,
+    type: EventType.religious,
+  ),
+  IslamicEvent(
+    title: 'Days of Tashreeq',
+    description: '11th-13th Dhul Hijjah — Takbeer days',
+    hijriDay: 11,
+    hijriMonth: 12,
+    type: EventType.historical,
+  ),
+];
+
+final Map<int, String> hijriMonths = {
+  1: 'Muharram',
+  2: 'Safar',
+  3: 'Rabi\' al-Awwal',
+  4: 'Rabi\' al-Thani',
+  5: 'Jumada al-Awwal',
+  6: 'Jumada al-Thani',
+  7: 'Rajab',
+  8: 'Sha\'ban',
+  9: 'Ramadan',
+  10: 'Shawwal',
+  11: 'Dhul Qadah',
+  12: 'Dhul Hijjah',
+};

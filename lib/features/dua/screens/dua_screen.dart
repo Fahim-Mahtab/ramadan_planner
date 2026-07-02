@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../models/dua_model.dart';
 import '../providers/dua_provider.dart';
 import '../widgets/dua_detail_sheet.dart';
+import 'ai_dua_recommender_screen.dart';
 
 // ── Time period for the selector ───────────────────────────────────────────────
 enum _Period { day, evening, night, all }
@@ -285,19 +286,38 @@ class _DuaScreenState extends State<DuaScreen> with TickerProviderStateMixin {
 
         final items = _buildItems(provider, langCode);
 
-        return SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              _buildHeader(isDark, provider, langCode),
-              if (_isSearchVisible) _buildSearchBar(isDark),
-              _buildPeriodSelector(isDark),
-              if (_period == _Period.all)
-                _buildAllTabExtras(isDark, provider, langCode),
-              Expanded(
-                child: _buildContent(isDark, provider, items, langCode),
-              ),
-            ],
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 70),
+            child: FloatingActionButton(
+            heroTag: 'dua_ai_fab',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AIDuaRecommenderScreen(),
+                ),
+              );
+            },
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.smart_toy_rounded, color: Colors.white),
+          ),
+          ),
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                _buildHeader(isDark, provider, langCode),
+                if (_isSearchVisible) _buildSearchBar(isDark),
+                _buildPeriodSelector(isDark),
+                if (_period == _Period.all)
+                  _buildAllTabExtras(isDark, provider, langCode),
+                Expanded(
+                  child: _buildContent(isDark, provider, items, langCode),
+                ),
+              ],
+            ),
           ),
         );
       },

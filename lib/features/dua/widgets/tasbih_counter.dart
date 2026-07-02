@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 
 class TasbihCounter extends StatelessWidget {
@@ -33,7 +34,7 @@ class TasbihCounter extends StatelessWidget {
                   color: isDark ? AppColors.slate400 : AppColors.slate500),
               const SizedBox(width: 6),
               Text(
-                'তাসবীহ কাউন্টার',
+                AppLocale.format(AppLocale.tasbihCounterTitle),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -142,7 +143,7 @@ class TasbihCounter extends StatelessWidget {
                         size: 14, color: AppColors.gold),
                     const SizedBox(width: 4),
                     Text(
-                      'সম্পন্ন!',
+                      AppLocale.format(AppLocale.tasbihCounterCompleted),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -173,7 +174,7 @@ class TasbihCounter extends StatelessWidget {
                             isDark ? AppColors.slate400 : AppColors.slate500),
                     const SizedBox(width: 4),
                     Text(
-                      'রিসেট',
+                      AppLocale.format(AppLocale.tasbihCounterReset),
                       style: TextStyle(
                         fontSize: 12,
                         color:
@@ -188,7 +189,7 @@ class TasbihCounter extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'ট্যাপ করুন গণনা করতে',
+          AppLocale.format(AppLocale.tasbihCounterTapHint),
           style: TextStyle(
             fontSize: 11,
             color: isDark ? AppColors.slate500 : AppColors.slate400,

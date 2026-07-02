@@ -3,9 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/ad_model.dart';
 
 /// Fetches active ads from Supabase and listens for real-time changes.
-///
-/// Uses Supabase Realtime so the UI updates instantly when an admin
-/// activates, deactivates, adds, or removes an ad — no restart needed.
 class AdsProvider with ChangeNotifier {
   final SupabaseClient _client = Supabase.instance.client;
 
@@ -39,8 +36,6 @@ class AdsProvider with ChangeNotifier {
   // ── Realtime subscription ─────────────────────────────────────────────────
 
   /// Sets up a Supabase Realtime channel that watches the `ads` table.
-  /// Any INSERT, UPDATE, or DELETE from the admin dashboard is reflected
-  /// immediately in the app.
   void _initRealtime() {
     // Do initial fetch first.
     _fetchAds();

@@ -9,7 +9,6 @@ import '../../auth/providers/auth_provider.dart';
 import '../../auth/screens/login_screen.dart';
 import '../models/community_comment_model.dart';
 import '../models/community_event_model.dart';
-import '../providers/community_admin_provider.dart';
 import '../providers/event_detail_provider.dart';
 
 class CommunityEventDetailScreen extends StatefulWidget {
@@ -23,7 +22,6 @@ class CommunityEventDetailScreen extends StatefulWidget {
 class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen> {
   static const double _maxContentWidth = 800;
   final _commentController = TextEditingController();
-  bool _isAdmin = false;
   late EventDetailProvider _provider;
 
   @override
@@ -31,12 +29,8 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
     super.initState();
     _provider = context.read<EventDetailProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final adminProvider = context.read<CommunityAdminProvider>();
       await _provider.loadEventDetails(widget.event.id);
       _provider.subscribeToEventChanges(widget.event.id);
-      final admin = await adminProvider.isCurrentUserAdmin();
-      if (!mounted) return;
-      setState(() => _isAdmin = admin);
     });
   }
 
@@ -55,14 +49,8 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
     return Scaffold(
       backgroundColor: isDark ? AppColors.slate900 : AppColors.slate50,
       appBar: AppBar(
-        title: const Text('Event Details'),
-        actions: [
-          if (_isAdmin)
-            IconButton(
-              icon: const Icon(Icons.admin_panel_settings_outlined),
-              onPressed: () => _showAdminMenu(context),
-            ),
-        ],
+        title: Text(AppLocale.format(AppLocale.eventDetailTitle)),
+        actions: [],
       ),
       body: provider.isLoading 
           ? const Center(child: CircularProgressIndicator())
@@ -103,7 +91,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.event.categoryName?.toUpperCase() ?? 'EVENT',
+                    widget.event.categoryName?.toUpperCase() ?? AppLocale.format(AppLocale.event),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
@@ -137,9 +125,9 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
         const SizedBox(height: 20),
         Row(
           children: [
-            _MetaInfo(icon: Icons.calendar_today_rounded, label: DateFormat('EEEE, MMMM d').format(widget.event.eventDate!)),
+            _MetaInfo(icon: Icons.calendar_today_rounded, label: DateFormat(AppLocale.format(AppLocale.eventDetailTimeFormat)).format(widget.event.eventDate!)),
             const SizedBox(width: 20),
-            _MetaInfo(icon: Icons.access_time_rounded, label: widget.event.startTime ?? 'TBD'),
+            _MetaInfo(icon: Icons.access_time_rounded, label: widget.event.startTime ?? AppLocale.format(AppLocale.tbd)),
           ],
         ),
       ],
@@ -157,7 +145,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'About this event',
+                AppLocale.format(AppLocale.eventDetailAbout),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -209,14 +197,14 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Organized by',
+                AppLocale.format(AppLocale.eventDetailOrganizedBy),
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.slate500,
                 ),
               ),
               Text(
-                widget.event.organizerName ?? 'Unknown Organizer',
+                widget.event.organizerName ?? AppLocale.format(AppLocale.eventDetailUnknownOrganizer),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -230,7 +218,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
           style: OutlinedButton.styleFrom(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text('Contact'),
+          child: Text(AppLocale.format(AppLocale.eventDetailContact)),
         ),
       ],
     );
@@ -254,8 +242,8 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Raised',
+                  Text(
+                    AppLocale.format(AppLocale.eventDetailRaised),
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.slate500),
                   ),
                   Text(
@@ -268,8 +256,8 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text(
-                      'Goal',
+                    Text(
+                      AppLocale.format(AppLocale.eventDetailGoal),
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.slate500),
                     ),
                     Text(
@@ -292,7 +280,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            '${(progress * 100).toInt()}% of the target reached',
+            AppLocale.format(AppLocale.eventDetailPercentReached, replace: {'percent': '${(progress * 100).toInt()}'}),
             style: TextStyle(fontSize: 12, color: AppColors.slate500, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 20),
@@ -314,7 +302,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 0,
               ),
-              child: const Text('Contribute Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+              child: Text(AppLocale.format(AppLocale.eventDetailContributeNow), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
             ),
           ),
         ],
@@ -328,7 +316,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
         _ReactionPill(
           icon: Icons.favorite_rounded,
           activeIcon: Icons.favorite_rounded,
-          label: 'Like',
+          label: AppLocale.format(AppLocale.eventDetailLike),
           count: provider.reactions['like'] ?? 0,
           color: Colors.pink,
           onTap: () {
@@ -344,7 +332,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
         _ReactionPill(
           icon: Icons.volunteer_activism_rounded,
           activeIcon: Icons.volunteer_activism_rounded,
-          label: 'Support',
+          label: AppLocale.format(AppLocale.eventDetailSupport),
           count: provider.reactions['support'] ?? 0,
           color: Colors.orange,
           onTap: () {
@@ -365,7 +353,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Comments (${provider.comments.length})',
+          AppLocale.format(AppLocale.eventDetailMainContentComments, replace: {'count': '${provider.comments.length}'}),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 16),
@@ -374,7 +362,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
             child: Padding(
               padding: const EdgeInsets.all(32.0),
               child: Text(
-                'No comments yet. Be the first to say something!',
+                AppLocale.format(AppLocale.eventDetailNoComments),
                 style: TextStyle(color: AppColors.slate500),
               ),
             ),
@@ -398,7 +386,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
             child: TextField(
               controller: _commentController,
               decoration: InputDecoration(
-                hintText: 'Add a comment...',
+                hintText: AppLocale.format(AppLocale.eventDetailAddComment),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
@@ -465,61 +453,6 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
     );
   }
 
-  void _showAdminMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.slate300, borderRadius: BorderRadius.circular(2))),
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text('Admin Controls', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ),
-            ListTile(
-              leading: const Icon(Icons.check_circle_outline, color: Colors.green),
-              title: const Text('Approve Event'),
-              onTap: () async {
-                await context.read<CommunityAdminProvider>().approveEvent(widget.event.id);
-                if (context.mounted) Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.cancel_outlined, color: Colors.red),
-              title: const Text('Reject Event'),
-              onTap: () async {
-                await context.read<CommunityAdminProvider>().rejectEvent(widget.event.id);
-                if (context.mounted) Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_month_outlined, color: Colors.orange),
-              title: const Text('Reschedule Event'),
-              onTap: () async {
-                final selected = await showDatePicker(
-                  context: context,
-                  firstDate: DateTime.now(),
-                  initialDate: DateTime.now().add(const Duration(days: 1)),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (selected == null || !context.mounted) return;
-                await context.read<CommunityAdminProvider>().rescheduleEvent(
-                      eventRequestId: widget.event.id,
-                      newDate: selected,
-                    );
-                if (context.mounted) Navigator.pop(context);
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showAuthRequiredDialog(BuildContext context, String actionText) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog<void>(
@@ -532,14 +465,14 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
             children: [
               const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 28),
               const SizedBox(width: 12),
-              const Text(
-                'Account Required',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                AppLocale.format(AppLocale.communityAccountRequired),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
           ),
           content: Text(
-            'You need to create an account or sign in to $actionText. It takes less than a minute!',
+            AppLocale.format(AppLocale.communityAuthPrompt, replace: {'action': actionText}),
             style: TextStyle(
               color: isDark ? AppColors.slate300 : AppColors.slate700,
               fontSize: 15,
@@ -548,9 +481,9 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
+              child: Text(
+                AppLocale.format(AppLocale.cancel),
+                style: const TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
               ),
             ),
             FilledButton(
@@ -565,7 +498,7 @@ class _CommunityEventDetailScreenState extends State<CommunityEventDetailScreen>
                 backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Sign In / Register'),
+              child: Text(AppLocale.format(AppLocale.communitySignInRegister)),
             ),
           ],
         );
@@ -672,7 +605,7 @@ class _CommentTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      comment.authorName ?? 'User',
+                      comment.authorName ?? AppLocale.format(AppLocale.eventDetailUser),
                       style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
                     ),
                     const SizedBox(width: 8),
@@ -701,11 +634,12 @@ class _CommentTile extends StatelessWidget {
 
   String _formatTimeAgo(DateTime? date) {
     if (date == null) return '';
+
     final diff = DateTime.now().difference(date);
-    if (diff.inDays > 0) return '${diff.inDays}d';
-    if (diff.inHours > 0) return '${diff.inHours}h';
-    if (diff.inMinutes > 0) return '${diff.inMinutes}m';
-    return 'now';
+    if (diff.inDays > 0) return AppLocale.format(AppLocale.timeAgoDays, replace: {'count': '${diff.inDays}'});
+    if (diff.inHours > 0) return AppLocale.format(AppLocale.timeAgoHours, replace: {'count': '${diff.inHours}'});
+    if (diff.inMinutes > 0) return AppLocale.format(AppLocale.timeAgoMinutes, replace: {'count': '${diff.inMinutes}'});
+    return AppLocale.format(AppLocale.justNow);
   }
 }
 
@@ -729,8 +663,8 @@ class _StatusChip extends StatelessWidget {
           AppLocale.format(AppLocale.communityStatusRescheduled),
           Colors.orange
         ),
-      CommunityEventStatus.completed => ('Completed', Colors.blue),
-      CommunityEventStatus.cancelled => ('Cancelled', Colors.grey),
+      CommunityEventStatus.completed => (AppLocale.format(AppLocale.communityCompleted), Colors.blue),
+      CommunityEventStatus.cancelled => (AppLocale.format(AppLocale.communityCancelled), Colors.grey),
       _ => (AppLocale.format(AppLocale.communityStatusPending), isDark ? Colors.white : Colors.black),
     };
     return Container(

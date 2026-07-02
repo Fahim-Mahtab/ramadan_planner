@@ -16,8 +16,8 @@ class SettingsScreen extends StatelessWidget {
     final user = Supabase.instance.client.auth.currentUser;
     final isGuest = user == null;
 
-    String displayName = 'Guest';
-    String displayContact = 'Not signed in';
+    String displayName = AppLocale.format(AppLocale.settingsGuest);
+    String displayContact = AppLocale.format(AppLocale.settingsNotSignedIn);
 
     if (!isGuest) {
       final metaName = user.userMetadata?['full_name']?.toString();
@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
             .map((w) => w.isEmpty ? '' : '${w[0].toUpperCase()}${w.substring(1)}')
             .join(' ');
       } else {
-        displayName = 'User';
+        displayName = AppLocale.format(AppLocale.settingsUser);
       }
 
       if (metaPhone != null && metaPhone.trim().isNotEmpty) {
@@ -43,7 +43,7 @@ class SettingsScreen extends StatelessWidget {
       } else if (emailStr != null) {
         displayContact = emailStr;
       } else {
-        displayContact = 'No contact info';
+        displayContact = AppLocale.format(AppLocale.settingsNoContact);
       }
     }
 
@@ -155,7 +155,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 10),
               _SettingsTile(
                 icon: Icons.contact_phone_outlined,
-                label: 'Contact Info',
+                label: AppLocale.format(AppLocale.settingsContactInfo),
                 trailing: Text(
                   displayContact,
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
@@ -211,9 +211,9 @@ class SettingsScreen extends StatelessWidget {
                 size: 18, color: AppColors.primary),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Text(
-              'App Language / অ্যাপের ভাষা',
+              AppLocale.format(AppLocale.settingsLanguageLabel),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -258,6 +258,7 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class _LoginTile extends StatelessWidget {
@@ -300,9 +301,9 @@ class _LoginTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            const Expanded(
-              child: Text(
-                'Sign In / Create Account',
+              Expanded(
+                child: Text(
+                  AppLocale.format(AppLocale.settingsSignInRegister),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,

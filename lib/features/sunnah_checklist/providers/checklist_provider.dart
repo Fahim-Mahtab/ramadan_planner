@@ -2,10 +2,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import '../../../core/l10n/app_locale.dart';
+import '../data/sunnah_acts.dart';
 import '../models/checklist_item_model.dart';
 
-/// Provider for managing Sunnah checklist
 class ChecklistProvider with ChangeNotifier {
   List<ChecklistItemModel> _items = [];
   bool _isLoading = true;
@@ -16,8 +15,8 @@ class ChecklistProvider with ChangeNotifier {
 
   List<ChecklistItemModel> get items => _items;
   bool get isLoading => _isLoading;
-
   int get completedCount => _items.where((item) => item.isCompleted).length;
+  double get totalProgress => _items.isEmpty ? 0 : completedCount / _items.length;
 
   String get _currentDateKey => DateFormat('yyyy_MM_dd').format(DateTime.now());
 
@@ -30,13 +29,11 @@ class ChecklistProvider with ChangeNotifier {
       try {
         final List<dynamic> decoded = json.decode(savedData);
         _items = decoded
-            .map(
-              (e) => ChecklistItemModel(
-                title: e['title'] as String,
-                isCompleted: e['isCompleted'] as bool,
-                key: e['key'] as String?,
-              ),
-            )
+            .map((e) => ChecklistItemModel(
+                  title: e['title'] as String,
+                  isCompleted: e['isCompleted'] as bool,
+                  key: e['key'] as String?,
+                ))
             .toList();
       } catch (e) {
         _items = _defaultItems();
@@ -49,23 +46,12 @@ class ChecklistProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<ChecklistItemModel> _defaultItems() => [
-        ChecklistItemModel(
-          title: 'Give Sadaqah (Charity) today',
-          key: AppLocale.checklistSadaqah,
-          isCompleted: false,
-        ),
-        ChecklistItemModel(
-          title: 'Recite Surah Al-Mulk before bed',
-          key: AppLocale.checklistMulk,
-          isCompleted: false,
-        ),
-        ChecklistItemModel(
-          title: 'Make Dua for the Ummah',
-          key: AppLocale.checklistUmmah,
-          isCompleted: false,
-        ),
-      ];
+  List<ChecklistItemModel> _defaultItems() =>
+      allSunnahActs.map((act) => ChecklistItemModel(
+            title: act.titleEn,
+            key: act.key,
+            isCompleted: false,
+          )).toList();
 
   Future<void> _saveItems() async {
     final prefs = await SharedPreferences.getInstance();

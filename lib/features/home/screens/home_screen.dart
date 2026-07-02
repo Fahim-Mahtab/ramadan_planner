@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/extensions/context_extensions.dart';
 import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/gradient_header.dart';
 import '../../../shared/widgets/bottom_nav_bar.dart';
 import '../../salah/widgets/salah_tracker_widget.dart';
 import '../../quran/widgets/quran_progress_widget.dart';
+import '../../sunnah_checklist/widgets/ai_sunnah_carousel.dart';
 import '../../ayah/widgets/ayah_card.dart';
-import '../../sunnah_checklist/widgets/checklist_widget.dart';
 import '../../dua/widgets/dua_card.dart';
 import '../../asmaul_husna/widgets/asmaul_husna_card.dart';
-import '../../community/screens/community_screen.dart';
+import '../../hadith/widgets/hadith_card.dart';
+import '../../more/screens/more_screen.dart';
 import '../../quran/screens/quran_screen.dart';
 import '../../salah/screens/time_screen.dart';
 import '../../dua/screens/dua_screen.dart';
-import 'package:provider/provider.dart';
 import '../../salah/providers/prayer_times_provider.dart';
 import '../../notices/widgets/notice_board_widget.dart';
+import '../widgets/community_hero_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPage(int index) {
     switch (index) {
       case 0:
-        return _HomePage();
+        return const _HomePage();
       case 1:
         return const QuranScreen();
       case 2:
@@ -51,17 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
       case 3:
         return const DuaScreen();
       case 4:
-        return const CommunityScreen();
+        return const MoreScreen();
       default:
-        return _ComingSoonPage(
-          label: [
-            AppLocale.format(AppLocale.navHome),
-            AppLocale.format(AppLocale.navQuran),
-            AppLocale.format(AppLocale.navTimes),
-            AppLocale.format(AppLocale.navDua),
-            AppLocale.format(AppLocale.navCommunity),
-          ][index],
-        );
+        return const SizedBox.shrink();
     }
   }
 
@@ -86,9 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Home tab ──────────────────────────────────────────────────────────────────
-
 class _HomePage extends StatelessWidget {
+  const _HomePage();
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -110,32 +105,32 @@ class _HomePage extends StatelessWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Notification board
                       const NoticeBoardWidget(),
                       const SizedBox(height: 16),
-
-                      // ── Spiritual Inspirations ────────────────────────────────
+                      const CommunityHeroCard(),
+                      const SizedBox(height: 16),
                       _SectionHeader(
                           label: AppLocale.format(AppLocale.homeInspirations)),
                       const SizedBox(height: 12),
                       const AyahCard(),
                       const SizedBox(height: 16),
+                      const HadithCard(),
+                      const SizedBox(height: 16),
                       const DuaCard(),
                       const SizedBox(height: 16),
                       const AsmaulHusnaCard(),
                       const SizedBox(height: 24),
-
-                      // ── Daily Trackers ────────────────────────────────────────
                       _SectionHeader(
                           label: AppLocale.format(AppLocale.homeDailyAmal)),
                       const SizedBox(height: 12),
                       const SalahTrackerWidget(),
                       const SizedBox(height: 24),
+                      const AISunnahCarousel(),
+                      const SizedBox(height: 24),
                       if (isRamadan) ...[
                         const QuranProgressWidget(),
                         const SizedBox(height: 24),
                       ],
-                      const ChecklistWidget(),
                       const SizedBox(height: 110),
                     ],
                   );
@@ -149,15 +144,13 @@ class _HomePage extends StatelessWidget {
   }
 }
 
-// ── Section header ────────────────────────────────────────────────────────────
-
 class _SectionHeader extends StatelessWidget {
   final String label;
   const _SectionHeader({required this.label});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDark;
     return Row(
       children: [
         Container(
@@ -179,37 +172,6 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ── Coming-soon placeholder ────────────────────────────────────────────────────
-
-class _ComingSoonPage extends StatelessWidget {
-  final String label;
-  const _ComingSoonPage({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.construction_rounded,
-              size: 56,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '$label screen coming soon!',
-              style: const TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-            const SizedBox(height: 80),
-          ],
-        ),
-      ),
     );
   }
 }

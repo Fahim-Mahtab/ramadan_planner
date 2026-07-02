@@ -46,6 +46,7 @@ app.*.map.json
 
 # App secrets — never commit credentials to version control
 lib/core/config/app_config.dart
+.env
 
 # Nested repositories
 dashBoardBot-main/

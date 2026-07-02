@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/ad_model.dart';
 import '../providers/ads_provider.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// Full-screen ad splash.
@@ -165,13 +166,13 @@ class _AdContent extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.15),
                     ),
                   ),
-                  child: const Row(
+                      child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('🌙', style: TextStyle(fontSize: 14)),
-                      SizedBox(width: 6),
+                      const Text('🌙', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
                       Text(
-                        'Ramadan Planner',
+                        AppLocale.format(AppLocale.adAppName),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -203,7 +204,7 @@ class _AdContent extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Skip',
+                          AppLocale.format(AppLocale.adSkip),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 13,
@@ -346,7 +347,7 @@ class _FullscreenAdPage extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'AD',
+                      AppLocale.format(AppLocale.adLabel),
                       style: TextStyle(
                         color: AppColors.primary,
                         fontSize: 10,

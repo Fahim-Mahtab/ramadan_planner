@@ -16,6 +16,7 @@ import 'community_calendar_screen.dart';
 import 'community_event_detail_screen.dart';
 import 'create_event_request_screen.dart';
 import '../widgets/community_qa_tab.dart';
+import 'ai_assistant_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
   static const double maxContentWidth = 900;
@@ -153,7 +154,17 @@ class _CommunityScreenState extends State<CommunityScreen>
           ),
         ),
       ),
-      floatingActionButton: null,
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'ai_assistant_fab',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AIAssistantScreen()),
+          );
+        },
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.smart_toy_rounded, color: Colors.white),
+      ),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -199,8 +210,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
-                    'Notifications',
+                  Text(
+                    AppLocale.format(AppLocale.communityNotifications),
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -220,7 +231,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                               size: 64, color: AppColors.slate300),
                           const SizedBox(height: 16),
                           Text(
-                            'No notifications yet',
+                            AppLocale.format(AppLocale.communityNoNotifications),
                             style: TextStyle(color: AppColors.slate500),
                           ),
                         ],
@@ -242,7 +253,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             ),
                           ),
                           title: Text(
-                            item['title']?.toString() ?? 'Notification',
+                            item['title']?.toString() ?? AppLocale.format(AppLocale.communityNotifications),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Padding(
@@ -400,15 +411,15 @@ class _AnnouncementCard extends StatelessWidget {
     switch (announcement.priority.toLowerCase()) {
       case 'urgent':
         priorityColor = Colors.red.shade600;
-        label = 'URGENT';
+        label = AppLocale.format(AppLocale.urgent);
         break;
       case 'important':
         priorityColor = Colors.amber.shade700;
-        label = 'IMPORTANT';
+        label = AppLocale.format(AppLocale.important);
         break;
       default:
         priorityColor = isDark ? AppColors.slate700 : AppColors.slate900;
-        label = 'BROADCAST';
+        label = AppLocale.format(AppLocale.broadcast);
     }
 
     return Container(
@@ -690,13 +701,13 @@ String _formatTimeAgo(DateTime? date) {
   if (difference.inDays > 7) {
     return DateFormat('MMM d, y').format(date);
   } else if (difference.inDays > 0) {
-    return '${difference.inDays}d ago';
+    return AppLocale.format(AppLocale.timeAgoDays, replace: {'count': '${difference.inDays}'});
   } else if (difference.inHours > 0) {
-    return '${difference.inHours}h ago';
+    return AppLocale.format(AppLocale.timeAgoHours, replace: {'count': '${difference.inHours}'});
   } else if (difference.inMinutes > 0) {
-    return '${difference.inMinutes}m ago';
+    return AppLocale.format(AppLocale.timeAgoMinutes, replace: {'count': '${difference.inMinutes}'});
   } else {
-    return 'Just now';
+    return AppLocale.format(AppLocale.justNow);
   }
 }
 
@@ -725,8 +736,8 @@ class _StatusChip extends StatelessWidget {
           AppLocale.format(AppLocale.communityStatusRescheduled),
           Colors.orange
         ),
-      CommunityEventStatus.completed => ('Completed', Colors.blue),
-      CommunityEventStatus.cancelled => ('Cancelled', Colors.grey),
+      CommunityEventStatus.completed => (AppLocale.format(AppLocale.communityCompleted), Colors.blue),
+      CommunityEventStatus.cancelled => (AppLocale.format(AppLocale.communityCancelled), Colors.grey),
       _ => (AppLocale.format(AppLocale.communityStatusPending), isDark ? Colors.white : Colors.black),
     };
     return Container(
@@ -762,7 +773,7 @@ class _FundraiserBadge extends StatelessWidget {
           Icon(Icons.volunteer_activism_rounded, size: 12, color: Colors.orange.shade800),
           const SizedBox(width: 4),
           Text(
-            target > 0 ? '৳${target.toInt()}' : 'Donation',
+            target > 0 ? '৳${target.toInt()}' : AppLocale.format(AppLocale.donation),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w900,
@@ -787,14 +798,14 @@ void showAuthRequiredDialog(BuildContext context, String actionText) {
           children: [
             const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 28),
             const SizedBox(width: 12),
-            const Text(
-              'Account Required',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              AppLocale.format(AppLocale.communityAccountRequired),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
         content: Text(
-          'You need to create an account or sign in to $actionText. It takes less than a minute!',
+          AppLocale.format(AppLocale.communityAuthPrompt, replace: {'action': actionText}),
           style: TextStyle(
             color: isDark ? AppColors.slate300 : AppColors.slate700,
             fontSize: 15,
@@ -803,9 +814,9 @@ void showAuthRequiredDialog(BuildContext context, String actionText) {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
+            child: Text(
+              AppLocale.format(AppLocale.cancel),
+              style: const TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
             ),
           ),
           FilledButton(
@@ -820,7 +831,7 @@ void showAuthRequiredDialog(BuildContext context, String actionText) {
               backgroundColor: AppColors.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Sign In / Register'),
+            child: Text(AppLocale.format(AppLocale.communitySignInRegister)),
           ),
         ],
       );

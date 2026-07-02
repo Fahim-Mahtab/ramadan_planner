@@ -133,8 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () => setState(() => _rememberMe = !_rememberMe),
-                          child: const Text(
-                            'Remember Me',
+                          child: Text(
+                            AppLocale.format(AppLocale.authRememberMe),
                             style: TextStyle(
                               fontSize: 14,
                               color: AppColors.slate600,

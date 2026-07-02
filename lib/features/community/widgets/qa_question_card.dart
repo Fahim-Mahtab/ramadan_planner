@@ -6,16 +6,10 @@ import '../models/community_qa_model.dart';
 
 class QAQuestionCard extends StatelessWidget {
   final CommunityQAModel qa;
-  final bool isAdmin;
-  final VoidCallback? onAnswerTap;
-  final VoidCallback? onDeleteTap;
 
   const QAQuestionCard({
     super.key,
     required this.qa,
-    this.isAdmin = false,
-    this.onAnswerTap,
-    this.onDeleteTap,
   });
 
   @override
@@ -149,35 +143,7 @@ class QAQuestionCard extends StatelessWidget {
             ),
           ],
 
-          // ── Footer: Admin Actions ─────────────────────────────────────────
-          if (isAdmin)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (!qa.isAnswered)
-                    TextButton.icon(
-                      onPressed: onAnswerTap,
-                      icon: const Icon(Icons.question_answer_rounded, size: 18),
-                      label: const Text('Answer'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                      ),
-                    ),
-                  TextButton.icon(
-                    onPressed: onDeleteTap,
-                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                    label: const Text('Delete'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.redAccent,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            const SizedBox(height: 12),
+          const SizedBox(height: 12),
         ],
       ),
     );

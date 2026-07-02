@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/screens/login_screen.dart';
-import '../providers/community_admin_provider.dart';
 import '../providers/community_qa_provider.dart';
 import 'qa_question_card.dart';
 
@@ -17,21 +16,13 @@ class CommunityQATab extends StatefulWidget {
 class _CommunityQATabState extends State<CommunityQATab> {
   String _searchQuery = '';
   String _filter = 'All'; // All, Pending, Solved
-  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
-    _checkAdmin();
-    // Refresh questions when tab is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CommunityQAProvider>().refresh();
     });
-  }
-
-  Future<void> _checkAdmin() async {
-    final admin = await context.read<CommunityAdminProvider>().isCurrentUserAdmin();
-    if (mounted) setState(() => _isAdmin = admin);
   }
 
   @override
@@ -43,6 +34,7 @@ class _CommunityQATabState extends State<CommunityQATab> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 70),
         child: FloatingActionButton(
+          heroTag: 'qa_fab',
           onPressed: () {
             final auth = context.read<AuthProvider>();
             if (!auth.isLoggedIn) {
@@ -143,12 +135,7 @@ class _CommunityQATabState extends State<CommunityQATab> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final qa = filtered[index];
-                      return QAQuestionCard(
-                        qa: qa,
-                        isAdmin: _isAdmin,
-                        onAnswerTap: () => _showAnswerDialog(context, qa.id),
-                        onDeleteTap: () => _confirmDelete(context, qa.id),
-                      );
+                      return QAQuestionCard(qa: qa);
                     },
                   ),
                 );
@@ -223,64 +210,6 @@ class _CommunityQATabState extends State<CommunityQATab> {
               }
             },
             child: const Text('Post'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAnswerDialog(BuildContext context, String questionId) {
-    final answerController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Provide Answer'),
-        content: TextField(
-          controller: answerController,
-          maxLines: 5,
-          decoration: const InputDecoration(hintText: 'Type the solution here...'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (answerController.text.isEmpty) return;
-              final messenger = ScaffoldMessenger.of(context);
-              final navigator = Navigator.of(context);
-              final success = await context.read<CommunityQAProvider>().answerQuestion(
-                questionId,
-                answerController.text,
-              );
-              navigator.pop();
-              if (success) {
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Answer posted!')),
-                );
-              }
-            },
-            child: const Text('Submit Answer'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, String id) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Question?'),
-        content: const Text('This action cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              final navigator = Navigator.of(context);
-              await context.read<CommunityQAProvider>().deleteQuestion(id);
-              navigator.pop();
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

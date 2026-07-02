@@ -1,3 +1,5 @@
+import '../l10n/app_locale.dart';
+
 /// App-wide constants
 class AppConstants {
   // Prayer Names
@@ -15,18 +17,18 @@ class AppConstants {
   static const int totalPages = 604;
 
   // App Strings
-  static const String appName = 'Ramadan Planner';
-  static const String dailySalah = 'Daily Salah';
-  static const String quranProgress = 'Quran Progress';
-  static const String sunnahChecklist = 'Sunnah Checklist';
-  static const String ayahOfTheDay = 'Ayah of the Day';
-  static const String duaOfTheDay = 'Dua of the Day';
-  static const String asmaulHusna = 'Asmaul Husna';
+  static String get appName => AppLocale.format(AppLocale.adAppName);
+  static String get dailySalah => AppLocale.format(AppLocale.salahTitle);
+  static String get quranProgress => AppLocale.format(AppLocale.quranProgressTitle);
+  static String get sunnahChecklist => AppLocale.format(AppLocale.checklistTitle);
+  static String get ayahOfTheDay => AppLocale.format(AppLocale.ayahTitle);
+  static String get duaOfTheDay => AppLocale.format(AppLocale.duaOfTheDay);
+  static String get asmaulHusna => AppLocale.format(AppLocale.asmaulHusnaTitle);
 
   // Navigation Labels
-  static const String navHome = 'Home';
-  static const String navQuran = 'Quran';
-  static const String navTimes = 'Times';
-  static const String navDua = 'Dua';
-  static const String navSettings = 'Settings';
+  static String get navHome => AppLocale.format(AppLocale.navHome);
+  static String get navQuran => AppLocale.format(AppLocale.navQuran);
+  static String get navTimes => AppLocale.format(AppLocale.navTimes);
+  static String get navDua => AppLocale.format(AppLocale.navDua);
+  static String get navSettings => AppLocale.format(AppLocale.navSettings);
 }

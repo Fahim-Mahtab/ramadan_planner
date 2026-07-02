@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// App color constants matching the HTML design
 class AppColors {
   // Primary Colors
-  static const Color primary = Color(0xFF13EC6D);
+  static const Color primary = Color(0xFF047857); // Deep Professional Islamic Emerald Green (High Contrast)
   static const Color gold = Color(0xFFD4AF37);
 
   // Background Colors

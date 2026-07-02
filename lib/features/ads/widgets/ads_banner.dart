@@ -3,13 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/ads_provider.dart';
 import '../models/ad_model.dart';
+import '../../../core/l10n/app_locale.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// Displays a horizontally scrollable banner of active ads.
 ///
 /// - Shows nothing when there are no active ads (zero height, no space)
 /// - Tapping an ad opens [AdModel.redirectUrl] in the browser
-/// - Updates in real-time when the admin changes ads in Supabase
 class AdsBanner extends StatelessWidget {
   const AdsBanner({super.key});
 
@@ -149,8 +149,8 @@ class _AdCard extends StatelessWidget {
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          'Ad',
+                        child: Text(
+                          AppLocale.format(AppLocale.adBannerLabel),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 10,
