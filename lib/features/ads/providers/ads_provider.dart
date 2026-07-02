@@ -6,7 +6,8 @@ import '../models/ad_model.dart';
 class AdsProvider with ChangeNotifier {
   final SupabaseClient _client = Supabase.instance.client;
 
-  List<AdModel> _ads = [];
+  List<AdModel> _splashAds = [];
+  List<AdModel> _homeAds = [];
   bool _isLoading = false;
   String? _error;
 
@@ -15,10 +16,13 @@ class AdsProvider with ChangeNotifier {
 
   // ── Getters ──────────────────────────────────────────────────────────────
 
-  List<AdModel> get ads => _ads;
+  List<AdModel> get ads =>
+      _splashAds; // Keep backward compatibility for AdScreen
+  List<AdModel> get homeAds => _homeAds;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get hasAds => _ads.isNotEmpty;
+  bool get hasAds => _splashAds.isNotEmpty; // For auth_gate
+  bool get hasHomeAds => _homeAds.isNotEmpty;
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -66,9 +70,13 @@ class AdsProvider with ChangeNotifier {
           .eq('is_active', true)
           .order('created_at', ascending: false);
 
-      _ads = (data as List)
+      final allAds = (data as List)
           .map((row) => AdModel.fromMap(row as Map<String, dynamic>))
           .toList();
+
+      _splashAds = allAds.where((a) => a.placement == 'splash').toList();
+      _homeAds = allAds.where((a) => a.placement == 'home').toList();
+
       _error = null;
     } catch (e) {
       _error = 'Failed to load ads.';
