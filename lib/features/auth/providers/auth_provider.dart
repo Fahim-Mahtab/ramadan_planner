@@ -66,6 +66,7 @@ class AuthProvider with ChangeNotifier {
           'full_name': fullName.trim(),
           'phone': phone.trim(),
         },
+        emailRedirectTo: kIsWeb ? null : 'ramadanplanner://callback',
       );
 
       // Supabase returns a session immediately if email confirmation is

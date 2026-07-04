@@ -7,9 +7,12 @@ class PrayerTimesModel {
   final String isha;
   final String jummah;
 
-  final String gregorianDate; // e.g. "09 Mar 2026"
-  final String hijriDate; // e.g. "20 Ramadan 1447"
-  final String hijriMonth; // e.g. "Ramadan"
+  final String gregorianDate;
+  final String hijriDate;
+  final String hijriMonth;
+
+  final String? sehriTime;
+  final String? iftarTime;
 
   PrayerTimesModel({
     required this.fajr,
@@ -22,6 +25,8 @@ class PrayerTimesModel {
     required this.gregorianDate,
     required this.hijriDate,
     required this.hijriMonth,
+    this.sehriTime,
+    this.iftarTime,
   });
 
   bool get isRamadan => hijriMonth.toLowerCase() == 'ramadan';
@@ -39,11 +44,27 @@ class PrayerTimesModel {
       asr: timings['Asr'] ?? '',
       maghrib: timings['Maghrib'] ?? '',
       isha: timings['Isha'] ?? '',
-      jummah: '13:30', // Hardcoded as per user request
+      jummah: '13:30',
       gregorianDate: date['readable'] ?? '',
-      hijriDate:
-          '${hijri['day'] ?? ''} ${hijriMonthData['en'] ?? ''} ${hijri['year'] ?? ''}',
+      hijriDate: '${hijri['day'] ?? ''} ${hijriMonthData['en'] ?? ''} ${hijri['year'] ?? ''}',
       hijriMonth: hijriMonthData['en'] ?? '',
+    );
+  }
+
+  factory PrayerTimesModel.fromSupabase(Map<String, dynamic> row) {
+    return PrayerTimesModel(
+      fajr: row['fajr_adhan'] ?? '',
+      sunrise: row['sunrise'] ?? '',
+      dhuhr: row['dhuhr_adhan'] ?? '',
+      asr: row['asr_adhan'] ?? '',
+      maghrib: row['maghrib_adhan'] ?? '',
+      isha: row['isha_adhan'] ?? row['ish_adhan'] ?? '',
+      jummah: row['jummah_adhan'] ?? '13:30',
+      gregorianDate: row['date'] ?? '',
+      hijriDate: '',
+      hijriMonth: '',
+      sehriTime: row['sehri_time'],
+      iftarTime: row['iftar_time'],
     );
   }
 }
