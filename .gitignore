@@ -50,3 +50,6 @@ lib/core/config/app_config.dart
 
 # Nested repositories
 dashBoardBot-main/
+
+# Local ignore files
+ignore_files/
