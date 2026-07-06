@@ -58,10 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // If email confirmation is disabled, user is logged in automatically and auth state resets.
       // Pop to return to previous screen instantly.
       if (auth.isLoggedIn) {
-        Navigator.of(context).pop();
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
+        Navigator.of(context).popUntil((route) => route.isFirst);
       } else {
         _showSuccessDialog();
       }
