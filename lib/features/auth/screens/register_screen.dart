@@ -160,7 +160,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Email (Optional)
                     AuthFormField(
                       controller: _emailController,
-                      label: '${AppLocale.format(AppLocale.authEmailLabel)} (Optional)',
+                      label: '${AppLocale.format(AppLocale.authEmailLabel)} )',
                       hint: AppLocale.format(AppLocale.authEmailHint),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
@@ -339,7 +339,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 }
 
-// ── Local sub-widgets ─────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
   @override
@@ -367,10 +366,10 @@ class _Header extends StatelessWidget {
           ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        Text(
+        /*Text(
           AppLocale.format(AppLocale.authRegisterSubtitle),
           style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        ),*/
       ],
     );
   }

@@ -99,6 +99,41 @@ class CommunityQAProvider with ChangeNotifier {
 
   Future<bool> deleteQuestion(String questionId) async {
     try {
+      final currentUser = _supabase.auth.currentUser;
+      if (currentUser == null) return false;
+
+      // 1. Fetch the question to verify ownership
+      final questionData = await _supabase
+          .from('community_qa')
+          .select('user_id')
+          .eq('id', questionId)
+          .maybeSingle();
+
+      if (questionData == null) return false;
+      final ownerId = questionData['user_id'] as String?;
+
+      // 2. Check if user is the owner
+      final isOwner = ownerId == currentUser.id;
+
+      // 3. Check if user is admin/imam
+      bool isAdmin = false;
+      try {
+        final profileData = await _supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', currentUser.id)
+            .maybeSingle();
+        if (profileData != null) {
+          final role = profileData['role'] as String?;
+          isAdmin = role == 'admin' || role == 'imam';
+        }
+      } catch (_) {}
+
+      if (!isOwner && !isAdmin) {
+        debugPrint('Unauthorized delete attempt: User ${currentUser.id} is not owner or admin.');
+        return false;
+      }
+
       await _supabase.from('community_qa').delete().eq('id', questionId);
       await fetchQuestions(); // Manual refresh after delete
       return true;

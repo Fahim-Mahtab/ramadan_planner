@@ -20,7 +20,9 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _supabase.from('orders').insert(order.toMap());
+      final currentUser = _supabase.auth.currentUser;
+      final orderWithUser = order.copyWith(userId: currentUser?.id);
+      await _supabase.from('orders').insert(orderWithUser.toMap());
       _success = true;
       return true;
     } catch (e) {

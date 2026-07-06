@@ -55,7 +55,7 @@ class PrayerTimesProvider with ChangeNotifier {
           .maybeSingle();
 
       if (data != null) {
-        return PrayerTimesModel.fromSupabase(data as Map<String, dynamic>);
+        return PrayerTimesModel.fromSupabase(data);
       }
     } catch (e) {
       if (kDebugMode) print("Supabase prayer times fetch failed: $e");

@@ -1231,7 +1231,7 @@ class AppLocale {
     authEmailInvalid: 'সঠিক ইমেইল দিন।',
     authPasswordRequired: 'পাসওয়ার্ড আবশ্যক।',
     authCreateAccount: 'অ্যাকাউন্ট তৈরি করুন',
-    authRegisterSubtitle: 'ফলপ্রসূ রমজানের জন্য আমাদের সাথে যুক্ত হোন',
+    //authRegisterSubtitle: 'ফলপ্রসূ রমজানের জন্য আমাদের সাথে যুক্ত হোন',
     authFullNameLabel: 'পুরো নাম',
     authFullNameHint: 'John Doe',
     authRegisterButton: 'সাইন আপ',

@@ -103,8 +103,32 @@ class NoticesProvider with ChangeNotifier {
   }
 
   Future<void> fetchAllForAdmin() async {
-     _setLoading(true);
+    _setLoading(true);
     try {
+      final currentUser = _client.auth.currentUser;
+      if (currentUser == null) {
+        _error = 'Unauthorized.';
+        return;
+      }
+
+      bool isAdmin = false;
+      try {
+        final profileData = await _client
+            .from('profiles')
+            .select('role')
+            .eq('id', currentUser.id)
+            .maybeSingle();
+        if (profileData != null) {
+          final role = profileData['role'] as String?;
+          isAdmin = role == 'admin' || role == 'imam';
+        }
+      } catch (_) {}
+
+      if (!isAdmin) {
+        _error = 'Unauthorized access to admin features.';
+        return;
+      }
+
       // Admins see BOTH active and inactive notices
       final data = await _client
           .from('notices')

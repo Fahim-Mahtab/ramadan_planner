@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:dart_openai/dart_openai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import '../../../core/services/ai_service.dart';
 
 class RecommendedDua {
   final String arabicText;
@@ -20,30 +19,13 @@ class RecommendedDua {
 class AIDuaProvider with ChangeNotifier {
   RecommendedDua? _recommendedDua;
   bool _isLoading = false;
-  bool _isInitialized = false;
   String? _error;
 
   RecommendedDua? get recommendedDua => _recommendedDua;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  void _init() {
-    if (_isInitialized) return;
-    final apiKey = dotenv.env['OPENAI_API_KEY'];
-    if (apiKey != null && apiKey.isNotEmpty) {
-      OpenAI.apiKey = apiKey;
-      _isInitialized = true;
-    }
-  }
-
   Future<void> fetchDuaRecommendation(String emotion) async {
-    _init();
-    if (!_isInitialized) {
-      _error = "OpenAI API Key is missing. Please check your .env file.";
-      notifyListeners();
-      return;
-    }
-
     if (emotion.trim().isEmpty) return;
 
     _isLoading = true;
@@ -54,10 +36,7 @@ class AIDuaProvider with ChangeNotifier {
       final langCode = FlutterLocalization.instance.currentLocale?.languageCode ?? 'bn';
       final languageName = langCode == 'en' ? 'English' : 'Bengali (Bangla)';
 
-      final systemMessage = OpenAIChatCompletionChoiceMessageModel(
-        role: OpenAIChatMessageRole.system,
-        content: [
-          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+      final systemPrompt = 
             "You are an empathetic Islamic assistant. The user will state how they are feeling (their emotion or situation). "
             "You must recommend exactly ONE authentic Dua (from Quran or authentic Hadith) that perfectly suits their situation. "
             "IMPORTANT: Your response MUST be in $languageName. "
@@ -65,24 +44,17 @@ class AIDuaProvider with ChangeNotifier {
             "ARABIC:\n<the arabic text of the dua>\n"
             "TRANSLITERATION:\n<the $languageName transliteration of the arabic text>\n"
             "TRANSLATION:\n<the $languageName translation of the dua>\n"
-            "EXPLANATION:\n<a short, empathetic explanation in $languageName of why this dua will help them>"
-          )
-        ],
-      );
+            "EXPLANATION:\n<a short, empathetic explanation in $languageName of why this dua will help them>";
 
-      final userMessage = OpenAIChatCompletionChoiceMessageModel(
-        role: OpenAIChatMessageRole.user,
-        content: [
-          OpenAIChatCompletionChoiceMessageContentItemModel.text("I am feeling: $emotion")
-        ],
-      );
+      final messages = [
+        {'role': 'system', 'content': systemPrompt},
+        {'role': 'user', 'content': "I am feeling: $emotion"},
+      ];
 
-      final chatCompletion = await OpenAI.instance.chat.create(
+      final responseText = await AIService.getChatCompletion(
+        messages: messages,
         model: "gpt-4o-mini",
-        messages: [systemMessage, userMessage],
       );
-
-      final responseText = chatCompletion.choices.first.message.content?.first.text ?? "";
       
       _parseResponse(responseText);
     } catch (e) {

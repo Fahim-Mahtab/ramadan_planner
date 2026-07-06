@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:dart_openai/dart_openai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../core/services/ai_service.dart';
 import '../models/ai_sunnah_model.dart';
 
 class AISunnahProvider with ChangeNotifier {
@@ -49,8 +48,6 @@ class AISunnahProvider with ChangeNotifier {
 
   Future<void> _fetchFromAI() async {
     try {
-      OpenAI.apiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
-
       final systemPrompt = '''
 You are an expert Islamic scholar. Generate exactly 5 unique, varied Sunnah acts of Prophet Muhammad (PBUH) for daily practice.
 Respond STRICTLY with a JSON array. Each element must be a JSON object with these exact keys:
@@ -62,23 +59,18 @@ Respond STRICTLY with a JSON array. Each element must be a JSON object with thes
 Do not include markdown tags like ```json.
 ''';
 
-      final chatCompletion = await OpenAI.instance.chat.create(
+      final messages = [
+        {'role': 'system', 'content': systemPrompt},
+        {'role': 'user', 'content': 'Generate the 5 daily sunnahs.'},
+      ];
+
+      final responseText = await AIService.getChatCompletion(
+        messages: messages,
         model: "gpt-4o-mini",
-        messages: [
-          OpenAIChatCompletionChoiceMessageModel(
-            role: OpenAIChatMessageRole.system,
-            content: [OpenAIChatCompletionChoiceMessageContentItemModel.text(systemPrompt)],
-          ),
-          OpenAIChatCompletionChoiceMessageModel(
-            role: OpenAIChatMessageRole.user,
-            content: [OpenAIChatCompletionChoiceMessageContentItemModel.text('Generate the 5 daily sunnahs.')],
-          ),
-        ],
         temperature: 0.7,
       );
 
-      final responseText = chatCompletion.choices.first.message.content?.first.text?.trim() ?? '[]';
-      String jsonStr = responseText;
+      String jsonStr = responseText.trim();
       if (jsonStr.startsWith('```json')) {
         jsonStr = jsonStr.replaceAll('```json', '').replaceAll('```', '').trim();
       }
