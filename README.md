@@ -120,11 +120,7 @@ Add screenshots to help users understand the UI quickly.
 Suggested section format:
 
 ```md
-## Screenshots
 
-| Home | Planner | Tasks |
-|------|---------|-------|
-| ![](assets/screenshots/home.png) | ![](assets/screenshots/planner.png) | ![](assets/screenshots/tasks.png) |
 ```
 
 ---
